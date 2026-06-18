@@ -1,8 +1,8 @@
 "use client";
 
+import type { AppPermission } from "@/types/permission";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { AppPermission } from "@/types/permission";
 
 function DashboardIcon() {
   return (
@@ -69,25 +69,20 @@ const navigationItems = [
     href: "/admin/users",
     label: "Usuarios",
     icon: UsersIcon,
-    requiredPermissions: [
-      "users.read.global",
-      "users.manage.global",
-    ] as AppPermission[],
+    requiredPermissions: ["users.read.global", "users.manage.global"] as AppPermission[],
   },
   {
     href: "/admin/roles",
     label: "Roles",
     icon: ShieldIcon,
-    requiredPermissions: [
-      "roles.read.global",
-      "roles.manage.global",
-    ] as AppPermission[],
+    requiredPermissions: ["roles.read.global", "roles.manage.global"] as AppPermission[],
   },
 ];
 
 type PlatformAdminSidebarProps = {
-  isOpen: boolean;
+  isExpanded: boolean;
   permissions: AppPermission[];
+  isSuperAdmin?: boolean;
   onNavigate?: () => void;
 };
 
@@ -101,22 +96,23 @@ function hasAnyPermission(
 }
 
 export function PlatformAdminSidebar({
-  isOpen,
+  isExpanded,
   permissions,
+  isSuperAdmin = false,
   onNavigate,
 }: PlatformAdminSidebarProps) {
   const pathname = usePathname();
   const visibleItems = navigationItems.filter((item) =>
-    hasAnyPermission(permissions, item.requiredPermissions),
+    isSuperAdmin || hasAnyPermission(permissions, item.requiredPermissions),
   );
 
   return (
-    <nav className="space-y-5">
+    <nav className="space-y-2">
       <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[#52D6A4]">
           Administración
         </p>
-        {isOpen ? (
+        {isExpanded ? (
           <p className="mt-2 text-sm leading-6 text-white/70">
             Accesos rápidos para la configuración global de la plataforma.
           </p>
@@ -137,17 +133,20 @@ export function PlatformAdminSidebar({
               key={item.href}
               href={item.href}
               className={[
-                "flex items-center gap-3 rounded-2xl px-3 py-3 transition",
+                isExpanded
+                  ? "flex items-center gap-3 rounded-2xl px-3 py-3 transition"
+                  : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl transition",
                 isActive
-                  ? "bg-[#52D6A4] text-[#2b3a44]"
+                  ? "bg-[#52d6a4] text-[#2b3a44]"
                   : "text-white hover:bg-white/10",
               ].join(" ")}
               onClick={onNavigate}
+              title={isExpanded ? undefined : item.label}
             >
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/10">
                 <Icon />
               </span>
-              <span className="font-semibold">{item.label}</span>
+              {isExpanded ? <span className="font-semibold">{item.label}</span> : null}
             </Link>
           );
         })}
