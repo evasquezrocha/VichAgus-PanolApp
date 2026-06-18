@@ -13,6 +13,16 @@ function DashboardIcon() {
   );
 }
 
+function WarehouseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M3 21V8l9-4 9 4v13" />
+      <path d="M5 21v-8h14v8" />
+      <path d="M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01M16 17h.01" />
+    </svg>
+  );
+}
+
 function UsersIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -21,11 +31,20 @@ function UsersIcon() {
   );
 }
 
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M12 3l7 4v5c0 5-3.5 8.5-7 9-3.5-.5-7-4-7-9V7z" />
+      <path d="M9.5 12.5l1.5 1.5 3.5-3.5" />
+    </svg>
+  );
+}
+
 function SettingsIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.96 3a1.7 1.7 0 0 0 1-1.55V1a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 8c.13.5.56.93 1.06 1H21a2 2 0 1 1 0 4h-.54c-.5.07-.93.5-1.06 1z" />
+      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+      <path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.04.04a2.2 2.2 0 0 1-1.56 3.76 2.2 2.2 0 0 1-1.56-.65l-.04-.04a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.1 1.64V20a2.2 2.2 0 0 1-4.4 0v-.05a1.8 1.8 0 0 0-1.1-1.64 1.8 1.8 0 0 0-1.98.36l-.04.04a2.2 2.2 0 0 1-3.12 0 2.2 2.2 0 0 1 0-3.12l.04-.04a1.8 1.8 0 0 0 .36-1.98 1.8 1.8 0 0 0-1.64-1.1H4a2.2 2.2 0 0 1 0-4.4h.05a1.8 1.8 0 0 0 1.64-1.1 1.8 1.8 0 0 0-.36-1.98l-.04-.04a2.2 2.2 0 0 1 0-3.12 2.2 2.2 0 0 1 3.12 0l.04.04a1.8 1.8 0 0 0 1.98.36H11a1.8 1.8 0 0 0 1.1-1.64V4a2.2 2.2 0 0 1 4.4 0v.05a1.8 1.8 0 0 0 1.1 1.64 1.8 1.8 0 0 0 1.98-.36l.04-.04a2.2 2.2 0 0 1 3.12 0 2.2 2.2 0 0 1 0 3.12l-.04.04a1.8 1.8 0 0 0-.36 1.98V11c0 .72.43 1.37 1.1 1.64.21.08.44.13.67.13H20a2.2 2.2 0 0 1 0 4.4h-.05a1.8 1.8 0 0 0-1.64 1.1Z" />
     </svg>
   );
 }
@@ -84,8 +103,11 @@ export function CompanySidebar({
   activeTextColor,
 }: CompanySidebarProps) {
   const pathname = usePathname();
+  const [isPanolOpen, setIsPanolOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const canViewDashboard = hasAnyPermission(permissions, ["company.access"]);
+  const canViewPanol = hasAnyPermission(permissions, ["company.access"]);
   const canViewUsers = hasAnyPermission(permissions, [
     "company.users.read",
     "company.users.manage",
@@ -99,11 +121,15 @@ export function CompanySidebar({
   ]);
   const canViewSettings =
     canViewUsers || canViewRoles || canViewGeneralParameters;
-  const isSettingsRoute =
+  const isPanolParentActive = pathname === "/company/panol";
+  const isPanolChildActive = pathname === "/company/panol/herramientas";
+  const isSettingsParentActive = pathname === "/company/settings";
+  const isSettingsChildActive =
     pathname === "/company/settings/users" ||
     pathname === "/company/settings/roles" ||
     pathname === "/company/settings/parametros-generales";
-  const showSettingsChildren = isExpanded && (isSettingsOpen || isSettingsRoute);
+  const showPanolChildren = isExpanded && (isPanolOpen || isPanolChildActive);
+  const showSettingsChildren = isExpanded && (isSettingsOpen || isSettingsChildActive);
 
   return (
     <nav className="space-y-2">
@@ -114,9 +140,7 @@ export function CompanySidebar({
             isExpanded
               ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition"
               : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm transition",
-            pathname === "/dashboard"
-              ? "font-semibold"
-              : "text-current hover:bg-current/10",
+            pathname === "/dashboard" ? "font-semibold" : "text-current hover:bg-current/10",
           ].join(" ")}
           title={isExpanded ? undefined : "Dashboard"}
           style={
@@ -128,37 +152,27 @@ export function CompanySidebar({
               : undefined
           }
         >
-          <span
-            className={[
-              "grid shrink-0 place-items-center rounded-xl bg-current/10",
-              isExpanded ? "h-10 w-10" : "h-9 w-9",
-            ].join(" ")}
-          >
+          <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
             <DashboardIcon />
           </span>
           {isExpanded ? <span className="font-semibold">Dashboard</span> : null}
         </Link>
       ) : null}
 
-      {canViewSettings ? (
-        <div
-          className={[
-            "rounded-2xl transition",
-            showSettingsChildren ? "bg-current/10" : "",
-          ].join(" ")}
-        >
+      {canViewPanol ? (
+        <div className={["rounded-2xl transition", showPanolChildren ? "bg-current/10" : ""].join(" ")}>
           <button
             type="button"
             className={[
               isExpanded
                 ? "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm"
                 : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm",
-              isSettingsRoute ? "font-semibold" : "text-current",
+              isPanolParentActive ? "font-semibold" : "text-current",
             ].join(" ")}
-            title={isExpanded ? undefined : "Configuracion"}
-            onClick={() => setIsSettingsOpen((current) => !current)}
+            title={isExpanded ? undefined : "Pañol"}
+            onClick={() => setIsPanolOpen((current) => !current)}
             style={
-              isSettingsRoute
+              isPanolParentActive
                 ? {
                     backgroundColor: activeBgColor,
                     color: activeTextColor,
@@ -166,12 +180,70 @@ export function CompanySidebar({
                 : undefined
             }
           >
-            <span
-              className={[
-                "grid shrink-0 place-items-center rounded-xl bg-current/10",
-                isExpanded ? "h-10 w-10" : "h-9 w-9",
-              ].join(" ")}
-            >
+            <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
+              <WarehouseIcon />
+            </span>
+            {isExpanded ? (
+              <>
+                <span className="font-semibold">Pañol</span>
+                <span className="ml-auto">
+                  <ChevronIcon open={showPanolChildren} />
+                </span>
+              </>
+            ) : null}
+          </button>
+
+          {showPanolChildren ? (
+            <div className="space-y-1 pb-2 pl-4 pr-2">
+              <Link
+                href="/company/panol/herramientas"
+                className={[
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  isPanolChildActive
+                    ? "font-semibold"
+                    : "text-current hover:bg-current/10",
+                ].join(" ")}
+                style={
+                  isPanolChildActive
+                    ? {
+                        backgroundColor: activeBgColor,
+                        color: activeTextColor,
+                      }
+                    : undefined
+                }
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <WarehouseIcon />
+                </span>
+                <span className="font-semibold">Herramientas</span>
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {canViewSettings ? (
+        <div className={["rounded-2xl transition", showSettingsChildren ? "bg-current/10" : ""].join(" ")}>
+          <button
+            type="button"
+            className={[
+              isExpanded
+                ? "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm"
+                : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm",
+              isSettingsParentActive ? "font-semibold" : "text-current",
+            ].join(" ")}
+            title={isExpanded ? undefined : "Configuracion"}
+            onClick={() => setIsSettingsOpen((current) => !current)}
+            style={
+              isSettingsParentActive
+                ? {
+                    backgroundColor: activeBgColor,
+                    color: activeTextColor,
+                  }
+                : undefined
+            }
+          >
+            <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
               <SettingsIcon />
             </span>
             {isExpanded ? (
@@ -187,9 +259,9 @@ export function CompanySidebar({
           {showSettingsChildren ? (
             <div className="space-y-1 pb-2 pl-4 pr-2">
               {canViewGeneralParameters ? (
-                  <Link
-                    href="/company/settings/parametros-generales"
-                    className={[
+                <Link
+                  href="/company/settings/parametros-generales"
+                  className={[
                     "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
                     pathname === "/company/settings/parametros-generales"
                       ? "font-semibold"
@@ -253,16 +325,7 @@ export function CompanySidebar({
                   }
                 >
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="h-5 w-5"
-                    >
-                      <path d="M12 3l7 4v5c0 5-3.5 8.5-7 9-3.5-.5-7-4-7-9V7z" />
-                      <path d="M9.5 12.5l1.5 1.5 3.5-3.5" />
-                    </svg>
+                    <ShieldIcon />
                   </span>
                   <span className="font-semibold">Roles</span>
                 </Link>

@@ -155,6 +155,104 @@ export type Database = {
           },
         ];
       };
+      tool_groups: {
+        Row: {
+          id: string;
+          company_id: string;
+          codigo: string;
+          descripcion: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          codigo: string;
+          descripcion: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          codigo?: string;
+          descripcion?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tool_groups_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tools: {
+        Row: {
+          id: string;
+          company_id: string;
+          tool_group_id: string;
+          codigo: string;
+          descripcion: string;
+          cantidad: number;
+          unidad: string;
+          marca: string | null;
+          modelo: string | null;
+          image_url: string | null;
+          image_dropbox_path: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          tool_group_id: string;
+          codigo: string;
+          descripcion: string;
+          cantidad?: number;
+          unidad: string;
+          marca?: string | null;
+          modelo?: string | null;
+          image_url?: string | null;
+          image_dropbox_path?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          tool_group_id?: string;
+          codigo?: string;
+          descripcion?: string;
+          cantidad?: number;
+          unidad?: string;
+          marca?: string | null;
+          modelo?: string | null;
+          image_url?: string | null;
+          image_dropbox_path?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tools_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tools_tool_group_id_fkey";
+            columns: ["tool_group_id"];
+            isOneToOne: false;
+            referencedRelation: "tool_groups";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

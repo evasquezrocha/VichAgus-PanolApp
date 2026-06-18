@@ -10,7 +10,7 @@ import { CompanyUserMenu } from "./company-user-menu";
 type CompanyShellProps = {
   children: React.ReactNode;
   profile: CurrentProfile;
-  title: string;
+  title?: string;
   subtitle?: string;
 };
 
@@ -150,17 +150,20 @@ export function CompanyShell({
         </aside>
 
         <main className="min-h-screen p-5 md:p-8">
-          <header className="mb-8 pb-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-accent">
-              Panel empresa
-            </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
-              {title}
-            </h2>
-            {subtitle ? (
-              <p className="mt-3 max-w-3xl text-muted">{subtitle}</p>
-            ) : null}
-          </header>
+          {title || subtitle ? (
+            <header className="mb-8 pb-3">
+              {title ? (
+                <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+                  {title}
+                </h2>
+              ) : null}
+              {subtitle ? (
+                <p className={title ? "mt-3 max-w-3xl text-muted" : "max-w-3xl text-muted"}>
+                  {subtitle}
+                </p>
+              ) : null}
+            </header>
+          ) : null}
 
           {children}
         </main>
