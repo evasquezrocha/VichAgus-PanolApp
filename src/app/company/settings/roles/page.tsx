@@ -52,16 +52,6 @@ export default async function CompanyRolesPage({
         <FlashBanner flash={flash} />
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Roles</h1>
-            <p className="mt-2 max-w-3xl text-muted">
-              Los roles de esta vista pertenecen solo a{" "}
-              <span className="font-medium text-foreground">
-                {profile.company_name}
-              </span>
-              . Selecciona uno para revisar o editar sus permisos por modulo.
-            </p>
-          </div>
           <div className="flex items-center gap-3">
             {isCreateMode ? (
               <Link
@@ -75,7 +65,7 @@ export default async function CompanyRolesPage({
                 className="rounded-full bg-accent px-5 py-3 font-semibold text-white transition hover:bg-accent-strong"
                 href={`${selectedRoleHref}${selectedRole ? "&" : "?"}create=1`}
               >
-                Crear nuevo rol
+                Crear Nuevo Rol
               </Link>
             )}
           </div>

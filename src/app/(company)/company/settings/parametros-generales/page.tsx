@@ -25,6 +25,8 @@ export default async function CompanyGeneralParametersPage({
   const sidebarActiveBg = profile.company_sidebar_active_bg_color ?? "#52d6a4";
   const sidebarActiveText = profile.company_sidebar_active_text_color ?? "#2b3a44";
   const platformBg = profile.company_platform_background_color ?? "#f6f3ed";
+  const popupBg = profile.company_popup_bg_color ?? "#2b3a44";
+  const popupText = profile.company_popup_text_color ?? "#ffffff";
 
   return (
     <CompanyShell
@@ -118,7 +120,7 @@ export default async function CompanyGeneralParametersPage({
             </div>
 
             <button className="rounded-full bg-accent px-6 py-3 font-semibold text-white transition hover:bg-accent-strong">
-              Guardar empresa
+              Guardar Cambios
             </button>
           </section>
 
@@ -183,8 +185,28 @@ export default async function CompanyGeneralParametersPage({
                 />
               </label>
 
+              <label className="block">
+                <span className="text-sm font-medium">Color de fondo de los pop up</span>
+                <input
+                  className="mt-2 h-12 w-full rounded-xl border border-line bg-white px-2 py-1 outline-none ring-accent/25 transition focus:ring-4"
+                  defaultValue={popupBg}
+                  name="popup_bg_color"
+                  type="color"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium">Color del texto de los pop up</span>
+                <input
+                  className="mt-2 h-12 w-full rounded-xl border border-line bg-white px-2 py-1 outline-none ring-accent/25 transition focus:ring-4"
+                  defaultValue={popupText}
+                  name="popup_text_color"
+                  type="color"
+                />
+              </label>
+
               <button className="rounded-full bg-accent px-6 py-3 font-semibold text-white transition hover:bg-accent-strong">
-                Guardar personalizacion
+                Guardar Cambios
               </button>
             </div>
 

@@ -7,6 +7,15 @@ export const companyInputSchema = z.object({
 
 export type CompanyInput = z.infer<typeof companyInputSchema>;
 
+const companyDomainSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(
+    /^[a-z0-9]+(?:[.-][a-z0-9]+)*$/,
+    "Ingresa un dominio valido sin protocolo.",
+  );
+
 const colorHexSchema = z
   .string()
   .trim()
@@ -21,6 +30,21 @@ export const companySettingsSchema = z.object({
   sidebar_active_bg_color: colorHexSchema,
   sidebar_active_text_color: colorHexSchema,
   platform_background_color: colorHexSchema,
+  popup_bg_color: colorHexSchema,
+  popup_text_color: colorHexSchema,
 });
 
 export type CompanySettingsInput = z.infer<typeof companySettingsSchema>;
+
+export const companyAdminUpdateSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(2).max(120),
+  slug: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Ingresa un slug valido."),
+  is_active: z.boolean(),
+});
+
+export type CompanyAdminUpdateInput = z.infer<typeof companyAdminUpdateSchema>;

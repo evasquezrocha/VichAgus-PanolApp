@@ -4,6 +4,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/server/auth/guards";
 import type {
+  CompanyAdminUpdateInput,
   CompanyInput,
   CompanySettingsInput,
 } from "@/schemas/company.schema";
@@ -54,6 +55,30 @@ export async function createCompanyForPlatformAdmin(input: CompanyInput) {
   return data;
 }
 
+export async function updateCompanyForPlatformAdmin(
+  input: CompanyAdminUpdateInput,
+) {
+  await requirePermission("companies.manage");
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("companies")
+    .update({
+      name: input.name,
+      slug: input.slug,
+      is_active: input.is_active,
+    })
+    .eq("id", input.id)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
 export async function updateCompanySettingsForCurrentCompanyAdmin(
   input: CompanySettingsInput,
 ) {
@@ -75,6 +100,8 @@ export async function updateCompanySettingsForCurrentCompanyAdmin(
       sidebar_active_bg_color: input.sidebar_active_bg_color,
       sidebar_active_text_color: input.sidebar_active_text_color,
       platform_background_color: input.platform_background_color,
+      popup_bg_color: input.popup_bg_color,
+      popup_text_color: input.popup_text_color,
     })
     .eq("id", currentProfile.company_id);
 

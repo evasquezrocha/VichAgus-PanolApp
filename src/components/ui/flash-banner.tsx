@@ -1,11 +1,41 @@
+"use client";
+
 import type { FlashMessage } from "@/lib/flash";
+import { useEffect, useState } from "react";
 
 type FlashBannerProps = {
   flash: FlashMessage | null;
+  dismissAfterMs?: number;
 };
 
-export function FlashBanner({ flash }: FlashBannerProps) {
+export function FlashBanner({
+  flash,
+  dismissAfterMs = 10_000,
+}: FlashBannerProps) {
+  const [visible, setVisible] = useState(Boolean(flash));
+
+  useEffect(() => {
+    if (!flash) {
+      setVisible(false);
+      return;
+    }
+
+    setVisible(true);
+
+    const timeoutId = window.setTimeout(() => {
+      setVisible(false);
+    }, dismissAfterMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [dismissAfterMs, flash]);
+
   if (!flash) {
+    return null;
+  }
+
+  if (!visible) {
     return null;
   }
 

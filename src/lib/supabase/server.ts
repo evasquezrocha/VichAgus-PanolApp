@@ -1,6 +1,7 @@
 import type { Database } from "@/types/database";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { withSharedSupabaseCookieDomain } from "./cookies";
 import { getSupabasePublicConfig } from "../env";
 
 export async function createServerSupabaseClient() {
@@ -15,7 +16,7 @@ export async function createServerSupabaseClient() {
       setAll(cookiesToSet) {
         try {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
+            cookieStore.set(name, value, withSharedSupabaseCookieDomain(options));
           });
         } catch {
           // Server Components cannot set cookies. Route Handlers, Actions and Proxy can.

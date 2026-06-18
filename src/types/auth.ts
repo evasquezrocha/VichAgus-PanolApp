@@ -5,6 +5,8 @@ export type CurrentProfile = Pick<
   Profile,
   "id" | "company_id" | "role_id" | "email" | "full_name" | "role" | "is_active"
 > & {
+  company_slug: string | null;
+  company_custom_domain: string | null;
   company_name: string | null;
   company_rut: string | null;
   company_logo_url: string | null;
@@ -13,6 +15,8 @@ export type CurrentProfile = Pick<
   company_sidebar_active_bg_color: string | null;
   company_sidebar_active_text_color: string | null;
   company_platform_background_color: string | null;
+  company_popup_bg_color: string | null;
+  company_popup_text_color: string | null;
   role_name: string | null;
   permissions: AppPermission[];
 };

@@ -1,6 +1,5 @@
 import { FlashBanner } from "@/components/ui/flash-banner";
 import { getFlashMessage } from "@/lib/flash";
-import { signInWithPasswordAction } from "@/actions/auth.actions";
 
 type LoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -16,7 +15,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-16">
       <form
-        action={signInWithPasswordAction}
+        action="/auth/login"
+        method="post"
         className="rounded-[1.75rem] border border-line bg-panel/90 p-8 shadow-2xl shadow-[#2b3a44]/10"
       >
         <input name="next" type="hidden" value={next} />

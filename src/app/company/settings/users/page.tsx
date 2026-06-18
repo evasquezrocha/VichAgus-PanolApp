@@ -54,16 +54,6 @@ export default async function CompanyUsersPage({
         <FlashBanner flash={flash} />
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight">Equipo</h1>
-            <p className="mt-2 max-w-2xl text-muted">
-              Los usuarios creados desde aqui quedan asociados automaticamente a{" "}
-              <span className="font-medium text-foreground">
-                {profile.company_name}
-              </span>{" "}
-              y solo pueden recibir roles permitidos para tu empresa.
-            </p>
-          </div>
           <div className="flex items-center gap-3">
             {isCreateMode ? (
               <Link

@@ -12,6 +12,10 @@ export function hasPermission(
   profile: CurrentProfile,
   permission: AppPermission,
 ) {
+  if (profile.role === "super_admin") {
+    return true;
+  }
+
   return profile.permissions.includes(permission);
 }
 
