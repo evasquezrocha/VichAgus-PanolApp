@@ -43,6 +43,8 @@ export function CompanyShell({
 
   const companyName = profile.company_name ?? "Sin empresa";
   const companyLogoUrl = profile.company_logo_url ?? null;
+  const popupBackground = profile.company_popup_background_color ?? "#fffdf8";
+  const popupTextColor = profile.company_popup_text_color ?? "#2b3a44";
   const sidebarBackground = profile.company_sidebar_bg_color ?? "#2b3a44";
   const sidebarTextColor = profile.company_sidebar_text_color ?? "#ffffff";
   const platformBackground =
@@ -68,7 +70,13 @@ export function CompanyShell({
         "min-h-screen px-0 py-0 transition-[padding] duration-300",
         isPinned ? "lg:pl-[20.5rem]" : "lg:pl-[6.75rem]",
       ].join(" ")}
-      style={{ backgroundColor: platformBackground }}
+      style={
+        {
+          backgroundColor: platformBackground,
+          ["--company-popup-background" as string]: popupBackground,
+          ["--company-popup-foreground" as string]: popupTextColor,
+        } as CSSProperties
+      }
     >
       <div className="min-h-screen w-full">
         <aside

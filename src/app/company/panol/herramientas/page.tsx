@@ -2,7 +2,15 @@ import { CompanyShell } from "@/components/layout/company-shell";
 import { FlashBanner } from "@/components/ui/flash-banner";
 import { getFlashMessage } from "@/lib/flash";
 import { requireCompanyAdmin } from "@/server/auth/guards";
-import { listToolGroups, listTools } from "@/services/panol.service";
+import {
+  listToolCustomFieldValues,
+  listToolCustomFields,
+  listToolGroups,
+  listTools,
+} from "@/services/panol.service";
+import {
+  listPanolLocations,
+} from "@/services/ubicaciones.service";
 import { ToolsManager } from "@/components/panol/tools-manager";
 
 export const dynamic = "force-dynamic";
@@ -29,10 +37,18 @@ export default async function HerramientasPage({
   searchParams,
 }: HerramientasPageProps) {
   const profile = await requireCompanyAdmin();
-  const [groups, tools] = await Promise.all([listToolGroups(), listTools()]);
+  const [groups, tools, customFields, customFieldValues, locations] = await Promise.all([
+    listToolGroups(),
+    listTools(),
+    listToolCustomFields(),
+    listToolCustomFieldValues(),
+    listPanolLocations(),
+  ]);
   const params = await searchParams;
   const flash = await getFlashMessage(searchParams);
   const activeTab = getActiveTab(params.tab);
+  const defaultLocationId =
+    locations.find((location) => location.is_default)?.id ?? locations[0]?.id ?? "";
 
   return (
     <CompanyShell profile={profile}>
@@ -40,8 +56,12 @@ export default async function HerramientasPage({
         <FlashBanner flash={flash} />
         <ToolsManager
           activeTab={activeTab}
+          customFieldValues={customFieldValues}
+          customFields={customFields}
           groups={groups}
           tools={tools}
+          locations={locations}
+          defaultLocationId={defaultLocationId}
         />
       </section>
     </CompanyShell>

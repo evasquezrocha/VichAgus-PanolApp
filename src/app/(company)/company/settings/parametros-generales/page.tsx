@@ -20,6 +20,8 @@ export default async function CompanyGeneralParametersPage({
   const companyName = profile.company_name ?? "";
   const companyRut = profile.company_rut ?? "";
   const companyLogoUrl = profile.company_logo_url ?? "";
+  const popupBg = profile.company_popup_background_color ?? "#fffdf8";
+  const popupText = profile.company_popup_text_color ?? "#2b3a44";
   const sidebarBg = profile.company_sidebar_bg_color ?? "#2b3a44";
   const sidebarText = profile.company_sidebar_text_color ?? "#ffffff";
   const sidebarActiveBg = profile.company_sidebar_active_bg_color ?? "#52d6a4";
@@ -42,7 +44,7 @@ export default async function CompanyGeneralParametersPage({
                 Empresa
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                Datos principales
+                Datos Principales
               </h2>
             </div>
 
@@ -125,13 +127,33 @@ export default async function CompanyGeneralParametersPage({
           <section className="space-y-6">
             <div className="space-y-5 rounded-[1.75rem] border border-line bg-white/70 p-5 md:p-6">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
                   Plataforma
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-                  Personalizacion visual
+                  Personalización Visual
                 </h2>
               </div>
+
+              <label className="block">
+                <span className="text-sm font-medium">Color de fondo del popup</span>
+                <input
+                  className="mt-2 h-12 w-full rounded-xl border border-line bg-white px-2 py-1 outline-none ring-accent/25 transition focus:ring-4"
+                  defaultValue={popupBg}
+                  name="popup_background_color"
+                  type="color"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-medium">Color del texto del popup</span>
+                <input
+                  className="mt-2 h-12 w-full rounded-xl border border-line bg-white px-2 py-1 outline-none ring-accent/25 transition focus:ring-4"
+                  defaultValue={popupText}
+                  name="popup_text_color"
+                  type="color"
+                />
+              </label>
 
               <label className="block">
                 <span className="text-sm font-medium">Color de fondo del menu lateral</span>
@@ -184,7 +206,7 @@ export default async function CompanyGeneralParametersPage({
               </label>
 
               <button className="rounded-full bg-accent px-6 py-3 font-semibold text-white transition hover:bg-accent-strong">
-                Guardar personalizacion
+                Guardar personalización
               </button>
             </div>
 

@@ -1,10 +1,12 @@
 import { ZodError } from "zod";
+import { randomUUID } from "crypto";
 
 export type FlashIntent = "success" | "error";
 
 type SearchParamValue = string | string[] | undefined;
 
 export type FlashMessage = {
+  flashId: string;
   intent: FlashIntent;
   message: string;
 };
@@ -26,6 +28,7 @@ export function buildFlashPath(
   const params = new URLSearchParams(query);
   params.set("status", intent);
   params.set("message", message);
+  params.set("flash_id", randomUUID());
 
   return `${pathname}?${params.toString()}`;
 }
@@ -55,6 +58,7 @@ export async function getFlashMessage(
   const params = await searchParams;
   const intent = takeFirstValue(params.status);
   const message = takeFirstValue(params.message);
+  const flashId = takeFirstValue(params.flash_id) ?? randomUUID();
 
   if (
     (intent !== "success" && intent !== "error") ||
@@ -65,6 +69,7 @@ export async function getFlashMessage(
   }
 
   return {
+    flashId,
     intent,
     message,
   };

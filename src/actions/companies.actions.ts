@@ -53,6 +53,8 @@ export async function updateCompanySettingsAction(formData: FormData) {
       name: formData.get("name"),
       rut: String(formData.get("rut") ?? "").trim() || null,
       logo_url: logoUrl,
+      popup_background_color: formData.get("popup_background_color"),
+      popup_text_color: formData.get("popup_text_color"),
       sidebar_bg_color: formData.get("sidebar_bg_color"),
       sidebar_text_color: formData.get("sidebar_text_color"),
       sidebar_active_bg_color: formData.get("sidebar_active_bg_color"),

@@ -16,6 +16,8 @@ export const companySettingsSchema = z.object({
   name: z.string().trim().min(2).max(120),
   rut: z.string().trim().min(3).max(32).nullable(),
   logo_url: z.string().trim().max(500).nullable(),
+  popup_background_color: colorHexSchema,
+  popup_text_color: colorHexSchema,
   sidebar_bg_color: colorHexSchema,
   sidebar_text_color: colorHexSchema,
   sidebar_active_bg_color: colorHexSchema,

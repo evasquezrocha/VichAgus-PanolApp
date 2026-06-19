@@ -23,6 +23,55 @@ function WarehouseIcon() {
   );
 }
 
+function ToolboxIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M10 7V6a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" />
+      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
+      <path d="M3 13h18" />
+      <path d="M9 13v2h6v-2" />
+    </svg>
+  );
+}
+
+function ToolIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M14.7 6.3a4.5 4.5 0 0 0-6.36 6.36l-4.6 4.6a1.5 1.5 0 0 0 2.12 2.12l4.6-4.6a4.5 4.5 0 0 0 6.36-6.36l-2.3 2.3-2.12-2.12 2.3-2.3Z" />
+      <path d="M16 4l4 4" />
+    </svg>
+  );
+}
+
+function EmployeeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M7 20v-1a5 5 0 0 1 5-5h0a5 5 0 0 1 5 5v1" />
+      <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+    </svg>
+  );
+}
+
+function TransferIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M4 7h12" />
+      <path d="M12 3l4 4-4 4" />
+      <path d="M20 17H8" />
+      <path d="M12 13l-4 4 4 4" />
+    </svg>
+  );
+}
+
+function LocationIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M12 21s6-5.1 6-11a6 6 0 0 0-12 0c0 5.9 6 11 6 11Z" />
+      <path d="M12 10.5a1.5 1.5 0 1 0 0-.01Z" />
+    </svg>
+  );
+}
+
 function UsersIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -122,13 +171,24 @@ export function CompanySidebar({
   const canViewSettings =
     canViewUsers || canViewRoles || canViewGeneralParameters;
   const isPanolParentActive = pathname === "/company/panol";
-  const isPanolChildActive = pathname === "/company/panol/herramientas";
+  const isPanolSectionActive =
+    pathname === "/company/panol/herramientas" ||
+    pathname === "/company/panol/equipos" ||
+    pathname === "/company/panol/empleados" ||
+    pathname === "/company/panol/ubicaciones" ||
+    pathname === "/company/panol/traspasos";
+  const isToolsActive = pathname === "/company/panol/herramientas";
+  const isEquiposActive = pathname === "/company/panol/equipos";
+  const isEmpleadosActive = pathname === "/company/panol/empleados";
+  const isLocationsActive = pathname === "/company/panol/ubicaciones";
+  const isTraspasosActive = pathname === "/company/panol/traspasos";
   const isSettingsParentActive = pathname === "/company/settings";
   const isSettingsChildActive =
     pathname === "/company/settings/users" ||
     pathname === "/company/settings/roles" ||
-    pathname === "/company/settings/parametros-generales";
-  const showPanolChildren = isExpanded && (isPanolOpen || isPanolChildActive);
+    pathname === "/company/settings/parametros-generales" ||
+    pathname === "/company/settings/campos-personalizados";
+  const showPanolChildren = isExpanded && (isPanolOpen || isPanolSectionActive);
   const showSettingsChildren = isExpanded && (isSettingsOpen || isSettingsChildActive);
 
   return (
@@ -160,7 +220,7 @@ export function CompanySidebar({
       ) : null}
 
       {canViewPanol ? (
-        <div className={["rounded-2xl transition", showPanolChildren ? "bg-current/10" : ""].join(" ")}>
+        <div className="rounded-2xl transition">
           <button
             type="button"
             className={[
@@ -181,7 +241,7 @@ export function CompanySidebar({
             }
           >
             <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
-              <WarehouseIcon />
+              <ToolboxIcon />
             </span>
             {isExpanded ? (
               <>
@@ -199,12 +259,100 @@ export function CompanySidebar({
                 href="/company/panol/herramientas"
                 className={[
                   "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
-                  isPanolChildActive
+                  isToolsActive
                     ? "font-semibold"
                     : "text-current hover:bg-current/10",
                 ].join(" ")}
                 style={
-                  isPanolChildActive
+                  isToolsActive
+                    ? {
+                        backgroundColor: activeBgColor,
+                        color: activeTextColor,
+                      }
+                    : undefined
+                }
+                >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <ToolIcon />
+                </span>
+                <span className="font-semibold">Herramientas</span>
+              </Link>
+              <Link
+                href="/company/panol/equipos"
+                className={[
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  isEquiposActive
+                    ? "font-semibold"
+                    : "text-current hover:bg-current/10",
+                ].join(" ")}
+                style={
+                  isEquiposActive
+                    ? {
+                        backgroundColor: activeBgColor,
+                        color: activeTextColor,
+                      }
+                    : undefined
+                }
+                >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <WarehouseIcon />
+                </span>
+                <span className="font-semibold">Equipos</span>
+              </Link>
+              <Link
+                href="/company/panol/empleados"
+                className={[
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  isEmpleadosActive
+                    ? "font-semibold"
+                    : "text-current hover:bg-current/10",
+                ].join(" ")}
+                style={
+                  isEmpleadosActive
+                    ? {
+                        backgroundColor: activeBgColor,
+                        color: activeTextColor,
+                      }
+                    : undefined
+                }
+                >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <EmployeeIcon />
+                </span>
+                <span className="font-semibold">Empleados</span>
+              </Link>
+              <Link
+                href="/company/panol/traspasos"
+                className={[
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  isTraspasosActive
+                    ? "font-semibold"
+                    : "text-current hover:bg-current/10",
+                ].join(" ")}
+                style={
+                  isTraspasosActive
+                    ? {
+                        backgroundColor: activeBgColor,
+                        color: activeTextColor,
+                      }
+                    : undefined
+                }
+                >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <TransferIcon />
+                </span>
+                <span className="font-semibold">Traspasos</span>
+              </Link>
+              <Link
+                href="/company/panol/ubicaciones"
+                className={[
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  isLocationsActive
+                    ? "font-semibold"
+                    : "text-current hover:bg-current/10",
+                ].join(" ")}
+                style={
+                  isLocationsActive
                     ? {
                         backgroundColor: activeBgColor,
                         color: activeTextColor,
@@ -213,9 +361,9 @@ export function CompanySidebar({
                 }
               >
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
-                  <WarehouseIcon />
+                  <LocationIcon />
                 </span>
-                <span className="font-semibold">Herramientas</span>
+                <span className="font-semibold">Ubicaciones</span>
               </Link>
             </div>
           ) : null}
@@ -232,7 +380,7 @@ export function CompanySidebar({
                 : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm",
               isSettingsParentActive ? "font-semibold" : "text-current",
             ].join(" ")}
-            title={isExpanded ? undefined : "Configuracion"}
+            title={isExpanded ? undefined : "Configuración"}
             onClick={() => setIsSettingsOpen((current) => !current)}
             style={
               isSettingsParentActive
@@ -248,7 +396,7 @@ export function CompanySidebar({
             </span>
             {isExpanded ? (
               <>
-                <span className="font-semibold">Configuracion</span>
+                <span className="font-semibold">Configuración</span>
                 <span className="ml-auto">
                   <ChevronIcon open={showSettingsChildren} />
                 </span>
@@ -279,7 +427,7 @@ export function CompanySidebar({
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
                     <SlidersIcon />
                   </span>
-                  <span className="font-semibold">Parametros Generales</span>
+                  <span className="font-semibold">Parámetros Generales</span>
                 </Link>
               ) : null}
               {canViewUsers ? (
@@ -330,6 +478,28 @@ export function CompanySidebar({
                   <span className="font-semibold">Roles</span>
                 </Link>
               ) : null}
+              <Link
+                href="/company/settings/campos-personalizados"
+                className={[
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  pathname === "/company/settings/campos-personalizados"
+                    ? "font-semibold"
+                    : "text-current hover:bg-current/10",
+                ].join(" ")}
+                style={
+                  pathname === "/company/settings/campos-personalizados"
+                    ? {
+                        backgroundColor: activeBgColor,
+                        color: activeTextColor,
+                      }
+                    : undefined
+                }
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <SlidersIcon />
+                </span>
+                <span className="font-semibold">Campos Personalizados</span>
+              </Link>
             </div>
           ) : null}
         </div>

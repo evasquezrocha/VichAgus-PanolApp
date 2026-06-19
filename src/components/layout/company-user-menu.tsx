@@ -74,7 +74,7 @@ export function CompanyUserMenu({ profile, isExpanded }: CompanyUserMenuProps) {
       </button>
 
       {isOpen ? (
-        <div className="absolute bottom-[calc(100%+0.75rem)] left-0 z-50 w-[min(20rem,calc(100vw-2rem))] rounded-[1.5rem] border border-current/15 bg-white/95 p-4 text-current shadow-2xl shadow-black/10">
+        <div className="company-popup-surface absolute bottom-[calc(100%+0.75rem)] left-0 z-50 w-[min(20rem,calc(100vw-2rem))] rounded-[1.5rem] border border-current/15 p-4 shadow-2xl shadow-black/10">
           {isChangingPassword ? (
             <form action={changeCurrentPasswordAction} className="space-y-4">
               <div>

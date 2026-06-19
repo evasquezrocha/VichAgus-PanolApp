@@ -8,23 +8,21 @@ type FlashBannerProps = {
 };
 
 export function FlashBanner({ flash }: FlashBannerProps) {
-  const [visibleFlash, setVisibleFlash] = useState(flash);
+  const [dismissedFlashKey, setDismissedFlashKey] = useState<string | null>(null);
+  const flashKey = flash ? flash.flashId : null;
+  const visibleFlash = flashKey && dismissedFlashKey !== flashKey ? flash : null;
 
   useEffect(() => {
-    setVisibleFlash(flash);
-  }, [flash]);
-
-  useEffect(() => {
-    if (!visibleFlash || visibleFlash.intent !== "success") {
+    if (!visibleFlash) {
       return;
     }
 
     const timer = window.setTimeout(() => {
-      setVisibleFlash(null);
+      setDismissedFlashKey(flashKey);
     }, 10_000);
 
     return () => window.clearTimeout(timer);
-  }, [visibleFlash]);
+  }, [flashKey, visibleFlash]);
 
   if (!visibleFlash) {
     return null;

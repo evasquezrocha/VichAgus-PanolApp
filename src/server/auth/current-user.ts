@@ -17,6 +17,8 @@ type CurrentProfileRow = {
     name: string;
     rut: string | null;
     logo_url: string | null;
+    popup_background_color: string | null;
+    popup_text_color: string | null;
     sidebar_bg_color: string | null;
     sidebar_text_color: string | null;
     sidebar_active_bg_color: string | null;
@@ -98,7 +100,7 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
 
   const data =
     (await readProfile(
-      "id, company_id, role_id, full_name, email, role, is_active, companies(name, rut, logo_url, sidebar_bg_color, sidebar_text_color, sidebar_active_bg_color, sidebar_active_text_color, platform_background_color)",
+      "id, company_id, role_id, full_name, email, role, is_active, companies(name, rut, logo_url, popup_background_color, popup_text_color, sidebar_bg_color, sidebar_text_color, sidebar_active_bg_color, sidebar_active_text_color, platform_background_color)",
     )) ??
     (await readProfile("id, company_id, role_id, full_name, email, role, is_active, companies(name)"));
 
@@ -132,6 +134,8 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
     company_name: companies?.name ?? null,
     company_rut: companies?.rut ?? null,
     company_logo_url: companies?.logo_url ?? null,
+    company_popup_background_color: companies?.popup_background_color ?? null,
+    company_popup_text_color: companies?.popup_text_color ?? null,
     company_sidebar_bg_color: companies?.sidebar_bg_color ?? null,
     company_sidebar_text_color: companies?.sidebar_text_color ?? null,
     company_sidebar_active_bg_color: companies?.sidebar_active_bg_color ?? null,

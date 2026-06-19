@@ -70,6 +70,8 @@ export async function updateCompanySettingsForCurrentCompanyAdmin(
       name: input.name,
       rut: input.rut ?? null,
       logo_url: input.logo_url ?? null,
+      popup_background_color: input.popup_background_color,
+      popup_text_color: input.popup_text_color,
       sidebar_bg_color: input.sidebar_bg_color,
       sidebar_text_color: input.sidebar_text_color,
       sidebar_active_bg_color: input.sidebar_active_bg_color,

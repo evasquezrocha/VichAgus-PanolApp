@@ -4,6 +4,8 @@ export type Company = {
   slug: string;
   rut: string | null;
   logo_url: string | null;
+  popup_background_color: string;
+  popup_text_color: string;
   sidebar_bg_color: string;
   sidebar_text_color: string;
   sidebar_active_bg_color: string;

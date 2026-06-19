@@ -32,3 +32,19 @@ body {
   color: var(--foreground);
   min-height: 100vh;
 }
+
+.company-popup-surface {
+  background-color: var(--company-popup-background);
+  color: var(--company-popup-foreground);
+  --foreground: var(--company-popup-foreground);
+  --muted: color-mix(
+    in srgb,
+    var(--company-popup-foreground) 64%,
+    var(--company-popup-background) 36%
+  );
+  --line: color-mix(
+    in srgb,
+    var(--company-popup-foreground) 15%,
+    var(--company-popup-background) 85%
+  );
+}

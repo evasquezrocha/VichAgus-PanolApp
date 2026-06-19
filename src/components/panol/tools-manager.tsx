@@ -6,14 +6,25 @@ import {
   deleteToolAction,
   updateToolAction,
 } from "@/actions/panol.actions";
-import type { Tool, ToolGroup } from "@/types/panol";
+import { PendingButton } from "@/components/ui/pending-button";
+import type {
+  Tool,
+  ToolCustomField,
+  ToolCustomFieldValue,
+  ToolGroup,
+} from "@/types/panol";
+import type { PanolLocation } from "@/types/ubicaciones";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type ToolsManagerProps = {
   activeTab: "herramientas" | "grupos";
+  customFields: ToolCustomField[];
+  customFieldValues: ToolCustomFieldValue[];
   groups: ToolGroup[];
   tools: Tool[];
+  locations: PanolLocation[];
+  defaultLocationId: string;
 };
 
 type ToolModalState =
@@ -24,10 +35,12 @@ type SortKey =
   | "codigo"
   | "descripcion"
   | "group"
+  | "ubicacion"
   | "cantidad"
   | "unidad"
   | "marca"
-  | "modelo";
+  | "modelo"
+  | `custom:${string}`;
 
 type SortDirection = "asc" | "desc";
 
@@ -38,7 +51,7 @@ function TabLink({
 }: {
   href: string;
   active: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <Link
@@ -84,13 +97,50 @@ function SortIcon({ direction }: { direction: SortDirection | null }) {
   );
 }
 
+function getFieldValueName(fieldId: string) {
+  return `custom_field_${fieldId}`;
+}
+
+function formatCustomFieldValue(
+  field: ToolCustomField,
+  value: string | null | undefined,
+) {
+  if (!value) {
+    return "-";
+  }
+
+  if (field.field_type === "boolean") {
+    return value === "true" ? "Sí" : "No";
+  }
+
+  return value;
+}
+
+function getLocationLabel(tool: Tool, locationsById: Map<string, PanolLocation>) {
+  if (tool.assigned_employee_id) {
+    return "Asignado a Empleado";
+  }
+
+  return locationsById.get(tool.ubicacion_id)?.nombre ?? tool.ubicacion_nombre ?? "PAÑOL";
+}
+
 function ToolFormFields({
+  customFields,
+  customFieldValuesById,
   groups,
   tool,
+  locations,
+  defaultLocationId,
 }: {
+  customFields: ToolCustomField[];
+  customFieldValuesById: Map<string, string | null>;
   groups: ToolGroup[];
   tool?: Tool | null;
+  locations: PanolLocation[];
+  defaultLocationId: string;
 }) {
+  const activeFields = customFields.filter((field) => field.is_active);
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <label className="block md:col-span-2">
@@ -105,6 +155,22 @@ function ToolFormFields({
           {groups.map((group) => (
             <option key={group.id} value={group.id}>
               {group.codigo} - {group.descripcion}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="block md:col-span-2">
+        <span className="text-sm font-medium">UBICACION</span>
+        <select
+          className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
+          defaultValue={tool?.ubicacion_id ?? defaultLocationId}
+          name="ubicacion_id"
+          required
+        >
+          {locations.map((location) => (
+            <option key={location.id} value={location.id}>
+              {location.nombre}
             </option>
           ))}
         </select>
@@ -132,7 +198,7 @@ function ToolFormFields({
       </label>
 
       <label className="block md:col-span-2">
-        <span className="text-sm font-medium">DESCRIPCIÓN</span>
+        <span className="text-sm font-medium">DESCRIPCION</span>
         <input
           className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
           name="descripcion"
@@ -177,24 +243,142 @@ function ToolFormFields({
           type="file"
         />
       </label>
+
+      {activeFields.length > 0 ? (
+        <div className="md:col-span-2">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-semibold">Campos personalizados</p>
+            <p className="text-xs text-muted">Se muestran solo los campos activos.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {activeFields.map((field) => {
+              const defaultValue = customFieldValuesById.get(field.id) ?? "";
+
+              if (field.field_type === "boolean") {
+                return (
+                  <label
+                    key={field.id}
+                    className="flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3 md:col-span-2"
+                  >
+                    <input
+                      name={getFieldValueName(field.id)}
+                      type="hidden"
+                      value="false"
+                    />
+                    <input
+                      className="h-4 w-4 accent-[#2b3a44]"
+                      defaultChecked={defaultValue === "true"}
+                      name={getFieldValueName(field.id)}
+                      type="checkbox"
+                      value="true"
+                    />
+                    <span className="text-sm font-medium">
+                      {field.codigo} - {field.nombre}
+                    </span>
+                    {field.is_required ? (
+                      <span className="ml-auto text-xs font-semibold uppercase tracking-wide text-accent">
+                        Requerido
+                      </span>
+                    ) : null}
+                  </label>
+                );
+              }
+
+              if (field.field_type === "select") {
+                return (
+                  <label key={field.id} className="block">
+                    <span className="text-sm font-medium">
+                      {field.codigo} - {field.nombre}
+                    </span>
+                    <select
+                      className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
+                      defaultValue={defaultValue}
+                      name={getFieldValueName(field.id)}
+                      required={field.is_required}
+                    >
+                      <option value="">Selecciona una opcion</option>
+                      {field.options.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                );
+              }
+
+              const inputType =
+                field.field_type === "number"
+                  ? "number"
+                  : field.field_type === "date"
+                    ? "date"
+                    : "text";
+
+              return (
+                <label key={field.id} className="block">
+                  <span className="text-sm font-medium">
+                    {field.codigo} - {field.nombre}
+                  </span>
+                  <input
+                    className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
+                    defaultValue={defaultValue}
+                    name={getFieldValueName(field.id)}
+                    required={field.is_required}
+                    type={inputType}
+                  />
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
-  const [toolModalState, setToolModalState] = useState<ToolModalState | null>(
-    null,
-  );
+export function ToolsManager({
+  activeTab,
+  customFields,
+  customFieldValues,
+  groups,
+  tools,
+  locations,
+  defaultLocationId,
+}: ToolsManagerProps) {
+  const [toolModalState, setToolModalState] = useState<ToolModalState | null>(null);
   const [imagePreviewTool, setImagePreviewTool] = useState<Tool | null>(null);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("codigo");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const imageDialogRef = useRef<HTMLDialogElement | null>(null);
+
   const groupById = useMemo(
     () => new Map(groups.map((group) => [group.id, group])),
     [groups],
   );
+
+  const locationById = useMemo(
+    () => new Map(locations.map((location) => [location.id, location])),
+    [locations],
+  );
+
+  const activeCustomFields = useMemo(
+    () => customFields.filter((field) => field.is_active),
+    [customFields],
+  );
+
+  const customFieldValuesByToolId = useMemo(() => {
+    const map = new Map<string, Map<string, string | null>>();
+
+    for (const value of customFieldValues) {
+      const toolMap = map.get(value.tool_id) ?? new Map<string, string | null>();
+      toolMap.set(value.custom_field_id, value.value_text);
+      map.set(value.tool_id, toolMap);
+    }
+
+    return map;
+  }, [customFieldValues]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -237,28 +421,36 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
       return tools;
     }
 
-    const filtered = tools.filter((tool) => {
+    return tools.filter((tool) => {
       const group = groupById.get(tool.tool_group_id);
+      const customValues = customFieldValuesByToolId.get(tool.id);
       const haystack = [
         tool.codigo,
         tool.descripcion,
         tool.marca ?? "",
         tool.modelo ?? "",
         tool.unidad,
+        getLocationLabel(tool, locationById),
         group ? `${group.codigo} ${group.descripcion}` : "",
+        ...activeCustomFields.map((field) =>
+          formatCustomFieldValue(field, customValues?.get(field.id) ?? null),
+        ),
       ]
         .join(" ")
         .toLowerCase();
 
       return haystack.includes(term);
     });
-
-    return filtered;
-  }, [groupById, search, tools]);
+  }, [activeCustomFields, customFieldValuesByToolId, groupById, locationById, search, tools]);
 
   const sortedTools = useMemo(() => {
     const getComparableValue = (tool: Tool) => {
       const group = groupById.get(tool.tool_group_id);
+
+      if (sortKey.startsWith("custom:")) {
+        const fieldId = sortKey.slice("custom:".length);
+        return customFieldValuesByToolId.get(tool.id)?.get(fieldId) ?? "";
+      }
 
       switch (sortKey) {
         case "codigo":
@@ -267,6 +459,8 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
           return tool.descripcion;
         case "group":
           return group ? `${group.codigo} ${group.descripcion}` : "";
+        case "ubicacion":
+          return getLocationLabel(tool, locationById);
         case "cantidad":
           return tool.cantidad;
         case "unidad":
@@ -276,6 +470,8 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
         case "modelo":
           return tool.modelo ?? "";
       }
+
+      return "";
     };
 
     const sorted = [...filteredTools].sort((left, right) => {
@@ -293,7 +489,7 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
     });
 
     return sortDirection === "asc" ? sorted : sorted.reverse();
-  }, [filteredTools, groupById, sortDirection, sortKey]);
+  }, [customFieldValuesByToolId, filteredTools, groupById, locationById, sortDirection, sortKey]);
 
   function toggleSort(nextKey: SortKey) {
     setSortKey((currentKey) => {
@@ -335,6 +531,10 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
 
   const dialogTool = toolModalState?.mode === "edit" ? toolModalState.tool : null;
   const isEditing = toolModalState?.mode === "edit";
+  const dialogCustomFieldValues = dialogTool
+    ? customFieldValuesByToolId.get(dialogTool.id) ?? new Map<string, string | null>()
+    : new Map<string, string | null>();
+  const tableMinWidth = 1280 + activeCustomFields.length * 180;
 
   return (
     <div className="space-y-6">
@@ -370,7 +570,7 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                 <span className="sr-only">Buscar herramienta</span>
                 <input
                   className="w-full rounded-full border border-line bg-white px-4 py-3 text-sm outline-none ring-accent/25 transition focus:ring-4 sm:w-[20rem]"
-                  placeholder="Buscar por código, grupo, descripción..."
+                placeholder="Buscar por código, grupo, descripción..."
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                 />
@@ -386,15 +586,22 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
           </div>
 
           <div className="mt-5 w-full overflow-x-auto">
-            <table className="w-full min-w-[960px] border-collapse text-[12px]">
+            <table
+              className="w-full border-collapse text-[12px]"
+              style={{ minWidth: `${tableMinWidth}px` }}
+            >
               <colgroup>
                 <col className="w-24" />
                 <col className="w-[21%]" />
                 <col className="w-[20%]" />
+                <col className="w-32" />
                 <col className="w-20" />
                 <col className="w-20" />
                 <col className="w-24" />
                 <col className="w-24" />
+                {activeCustomFields.map((field) => (
+                  <col key={field.id} className="w-40" />
+                ))}
                 <col className="w-28" />
                 <col className="w-24" />
               </colgroup>
@@ -428,6 +635,16 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                     >
                       Grupo
                       <SortIcon direction={getSortDirectionForKey("group")} />
+                    </button>
+                  </th>
+                  <th className="pb-2 pr-2 font-semibold">
+                    <button
+                      className="inline-flex items-center font-semibold"
+                      onClick={() => toggleSort("ubicacion")}
+                      type="button"
+                    >
+                      Ubicación
+                      <SortIcon direction={getSortDirectionForKey("ubicacion")} />
                     </button>
                   </th>
                   <th className="pb-2 pr-2 font-semibold">
@@ -470,6 +687,20 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                       <SortIcon direction={getSortDirectionForKey("modelo")} />
                     </button>
                   </th>
+                  {activeCustomFields.map((field) => (
+                    <th key={field.id} className="pb-2 pr-2 font-semibold">
+                      <button
+                        className="inline-flex items-center font-semibold"
+                        onClick={() => toggleSort(`custom:${field.id}`)}
+                        type="button"
+                      >
+                        {field.codigo}
+                        <SortIcon
+                          direction={getSortDirectionForKey(`custom:${field.id}`)}
+                        />
+                      </button>
+                    </th>
+                  ))}
                   <th className="pb-2 pr-2 font-semibold">Imagen</th>
                   <th className="pb-2 font-semibold">Acciones</th>
                 </tr>
@@ -477,6 +708,7 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
               <tbody>
                 {sortedTools.map((tool) => {
                   const group = groupById.get(tool.tool_group_id);
+                  const toolCustomValues = customFieldValuesByToolId.get(tool.id);
 
                   return (
                     <tr key={tool.id} className="border-b border-line/60 align-top">
@@ -491,10 +723,31 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                           {group ? `${group.codigo} - ${group.descripcion}` : "Sin grupo"}
                         </div>
                       </td>
+                      <td className="py-2 pr-2 align-middle text-muted">
+                        <div className="max-w-[14rem] break-words">
+                          {getLocationLabel(tool, locationById)}
+                        </div>
+                      </td>
                       <td className="py-2 pr-2 align-middle text-muted">{tool.cantidad}</td>
-                      <td className="py-2 pr-2 align-middle text-muted uppercase">{tool.unidad}</td>
-                      <td className="py-2 pr-2 align-middle text-muted">{tool.marca ?? "-"}</td>
-                      <td className="py-2 pr-2 align-middle text-muted">{tool.modelo ?? "-"}</td>
+                      <td className="py-2 pr-2 align-middle text-muted uppercase">
+                        {tool.unidad}
+                      </td>
+                      <td className="py-2 pr-2 align-middle text-muted">
+                        {tool.marca ?? "-"}
+                      </td>
+                      <td className="py-2 pr-2 align-middle text-muted">
+                        {tool.modelo ?? "-"}
+                      </td>
+                      {activeCustomFields.map((field) => (
+                        <td key={field.id} className="py-2 pr-2 align-middle text-muted">
+                          <div className="max-w-[12rem] break-words">
+                            {formatCustomFieldValue(
+                              field,
+                              toolCustomValues?.get(field.id) ?? null,
+                            )}
+                          </div>
+                        </td>
+                      ))}
                       <td className="py-2 pr-2 align-middle text-muted">
                         {tool.image_url ? (
                           <button
@@ -526,19 +779,20 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                           <form
                             action={deleteToolAction}
                             onSubmit={(event) => {
-                              if (!window.confirm("¿Eliminar esta herramienta?")) {
+                              if (!window.confirm("Eliminar esta herramienta?")) {
                                 event.preventDefault();
                               }
                             }}
                           >
                             <input name="tool_id" type="hidden" value={tool.id} />
-                            <button
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"
-                              title="Eliminar"
-                              type="submit"
-                            >
-                              <TrashIcon />
-                            </button>
+                        <PendingButton
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"
+                          title="Eliminar"
+                          pendingLabel=""
+                          type="submit"
+                        >
+                          <TrashIcon />
+                        </PendingButton>
                           </form>
                         </div>
                       </td>
@@ -548,8 +802,8 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
 
                 {sortedTools.length === 0 ? (
                   <tr>
-                    <td className="py-10 text-center text-muted" colSpan={9}>
-                      No hay herramientas que coincidan con la búsqueda.
+                    <td className="py-10 text-center text-muted" colSpan={10 + activeCustomFields.length}>
+                      No hay herramientas que coincidan con la busqueda.
                     </td>
                   </tr>
                 ) : null}
@@ -559,7 +813,7 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
 
           <dialog
             ref={dialogRef}
-            className="fixed left-1/2 top-1/2 z-50 m-0 max-h-[calc(100vh-2rem)] w-[min(56rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[2rem] border border-line bg-white p-0 shadow-2xl shadow-black/25 backdrop:bg-black/50"
+            className="company-popup-surface fixed left-1/2 top-1/2 z-50 m-0 max-h-[calc(100vh-2rem)] w-[min(56rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[2rem] border border-line p-0 shadow-2xl shadow-black/25 backdrop:bg-black/50"
             onCancel={closeToolModal}
             onClose={closeToolModal}
           >
@@ -612,14 +866,21 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                       src={dialogTool.image_url}
                     />
                     <div className="text-sm text-muted">
-                      Si subes una nueva imagen, reemplazará la actual.
+                      Si subes una nueva imagen, reemplazara la actual.
                     </div>
                   </div>
                 </div>
               ) : null}
 
               <div className="mt-6">
-                <ToolFormFields groups={groups} tool={dialogTool} />
+                <ToolFormFields
+                  customFieldValuesById={dialogCustomFieldValues}
+                  customFields={customFields}
+                  groups={groups}
+                  locations={locations}
+                  defaultLocationId={defaultLocationId}
+                  tool={dialogTool}
+                />
               </div>
 
               <div className="mt-6 flex items-center justify-end gap-3 border-t border-line pt-4">
@@ -630,19 +891,20 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                 >
                   Cancelar
                 </button>
-                <button
+                <PendingButton
                   className="rounded-full bg-accent px-6 py-3 font-semibold text-white transition hover:bg-accent-strong"
+                  pendingLabel="Guardando..."
                   type="submit"
                 >
                   {isEditing ? "Guardar cambios" : "Guardar herramienta"}
-                </button>
+                </PendingButton>
               </div>
             </form>
           </dialog>
 
           <dialog
             ref={imageDialogRef}
-            className="fixed left-1/2 top-1/2 z-50 m-0 max-h-[calc(100vh-2rem)] w-[min(42rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[2rem] border border-line bg-white p-0 shadow-2xl shadow-black/25 backdrop:bg-black/50"
+            className="company-popup-surface fixed left-1/2 top-1/2 z-50 m-0 max-h-[calc(100vh-2rem)] w-[min(42rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[2rem] border border-line p-0 shadow-2xl shadow-black/25 backdrop:bg-black/50"
             onCancel={closeImagePreview}
             onClose={closeImagePreview}
           >
@@ -690,7 +952,7 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
               Grupos de herramientas
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              Catálogo de grupos
+              Catalogo de grupos
             </h2>
             <p className="mt-2 text-sm text-muted">
               Estos grupos alimentan el selector del formulario de herramientas.
@@ -708,7 +970,7 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
                 />
               </label>
               <label className="block">
-                <span className="text-sm font-medium">DESCRIPCIÓN</span>
+                <span className="text-sm font-medium">DESCRIPCION</span>
                 <input
                   className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
                   name="descripcion"
@@ -718,9 +980,13 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
             </div>
 
             <div className="flex items-center justify-end">
-              <button className="rounded-full border border-line bg-white px-5 py-3 font-semibold text-foreground transition hover:bg-panel">
+              <PendingButton
+                className="rounded-full border border-line bg-white px-5 py-3 font-semibold text-foreground transition hover:bg-panel"
+                pendingLabel="Agregando..."
+                type="submit"
+              >
                 Agregar Grupo
-              </button>
+              </PendingButton>
             </div>
           </form>
 
@@ -737,7 +1003,7 @@ export function ToolsManager({ activeTab, groups, tools }: ToolsManagerProps) {
             ))}
             {groups.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-line bg-white px-4 py-6 text-sm text-muted">
-                Aún no hay grupos creados.
+                Aun no hay grupos creados.
               </div>
             ) : null}
           </div>
