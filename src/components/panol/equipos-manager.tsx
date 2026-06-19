@@ -7,21 +7,27 @@ import {
   updateEquipmentAction,
 } from "@/actions/equipos.actions";
 import { PendingButton } from "@/components/ui/pending-button";
+import { EquipoFichaContent } from "@/components/panol/equipo-ficha-content";
+import { getStatusSelectValue } from "@/lib/item-status";
 import type {
   Equipment,
+  EquipmentDetail,
   EquipmentCustomField,
   EquipmentCustomFieldValue,
   EquipmentGroup,
 } from "@/types/equipos";
 import type { PanolLocation } from "@/types/ubicaciones";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type EquipmentsManagerProps = {
-  activeTab: "equipos" | "grupos";
+  activeTab: "equipos" | "grupos" | "ficha-equipo";
   customFields: EquipmentCustomField[];
   customFieldValues: EquipmentCustomFieldValue[];
   groups: EquipmentGroup[];
+  selectedEquipmentDetail: EquipmentDetail | null;
+  selectedEquipmentId: string | null;
   equipments: Equipment[];
   locations: PanolLocation[];
   defaultLocationId: string;
@@ -116,15 +122,33 @@ function formatCustomFieldValue(
   return value;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getLocationLabel(
   equipment: Equipment,
   locationsById: Map<string, PanolLocation>,
 ) {
   if (equipment.assigned_employee_id) {
-    return "Asignado a Empleado";
+    return `Empleado: ${equipment.assigned_employee_name ?? "Sin asignar"}`;
   }
 
   return locationsById.get(equipment.ubicacion_id)?.nombre ?? equipment.ubicacion_nombre ?? "PAÑOL";
+}
+
+function getCurrentHolderLabel(
+  equipment: Equipment,
+  locationsById: Map<string, PanolLocation>,
+) {
+  if (equipment.assigned_employee_id) {
+    return `Empleado: ${equipment.assigned_employee_name ?? "Sin asignar"}`;
+  }
+
+  const location = locationsById.get(equipment.ubicacion_id);
+
+  if (location?.is_default) {
+    return "Ubicación: PAÃ‘OL";
+  }
+
+  return `Ubicación: ${location?.nombre ?? equipment.ubicacion_nombre ?? "PAÃ‘OL"}`;
 }
 
 function EquipmentFormFields({
@@ -209,13 +233,19 @@ function EquipmentFormFields({
       </label>
       <label className="block">
         <span className="text-sm font-medium">Estado</span>
-        <input
+        <select
           className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
           name="estado"
-          defaultValue={tool?.estado ?? ""}
-          placeholder="Operativo"
+          defaultValue={getStatusSelectValue(tool?.estado)}
           required
-        />
+        >
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+          {tool?.estado &&
+          !["activo", "inactivo"].includes(tool.estado.trim().toLowerCase()) ? (
+            <option value={tool.estado}>{tool.estado}</option>
+          ) : null}
+        </select>
       </label>
       <label className="block">
         <span className="text-sm font-medium">MARCA</span>
@@ -341,10 +371,13 @@ export function EquipmentsManager({
   customFields,
   customFieldValues,
   groups,
+  selectedEquipmentDetail,
+  selectedEquipmentId,
   equipments,
   locations,
   defaultLocationId,
 }: EquipmentsManagerProps) {
+  const router = useRouter();
   const [toolModalState, setEquipmentModalState] = useState<EquipmentModalState | null>(null);
   const [imagePreviewEquipment, setImagePreviewEquipment] = useState<Equipment | null>(null);
   const [search, setSearch] = useState("");
@@ -431,7 +464,7 @@ export function EquipmentsManager({
         tool.modelo ?? "",
         tool.nro_serie ?? "",
         tool.estado ?? "",
-        getLocationLabel(tool, locationById),
+        getCurrentHolderLabel(tool, locationById),
         group ? `${group.codigo} ${group.descripcion}` : "",
         ...activeCustomFields.map((field) =>
           formatCustomFieldValue(field, customValues?.get(field.id) ?? null),
@@ -465,7 +498,7 @@ export function EquipmentsManager({
         case "estado":
           return tool.estado ?? "";
         case "ubicacion":
-          return getLocationLabel(tool, locationById);
+          return getCurrentHolderLabel(tool, locationById);
         case "marca":
           return tool.marca ?? "";
         case "modelo":
@@ -552,6 +585,18 @@ export function EquipmentsManager({
         >
           Grupos de Equipos
         </TabLink>
+        <TabLink
+          href={
+            selectedEquipmentId
+              ? `/company/panol/equipos?tab=ficha-equipo&equipmentId=${encodeURIComponent(
+                  selectedEquipmentId,
+                )}`
+              : "/company/panol/equipos?tab=ficha-equipo"
+          }
+          active={activeTab === "ficha-equipo"}
+        >
+          Ficha de Equipo
+        </TabLink>
       </div>
 
       {activeTab === "equipos" ? (
@@ -596,6 +641,7 @@ export function EquipmentsManager({
                 <col className="w-[21%]" />
                 <col className="w-[20%]" />
                 <col className="w-32" />
+                <col className="w-36" />
                 <col className="w-28" />
                 <col className="w-28" />
                 <col className="w-24" />
@@ -710,9 +756,36 @@ export function EquipmentsManager({
                 {sortedEquipments.map((tool) => {
                   const group = groupById.get(tool.tool_group_id);
                   const toolCustomValues = customFieldValuesByEquipmentId.get(tool.id);
+                  const isSelected = selectedEquipmentId === tool.id;
 
                   return (
-                    <tr key={tool.id} className="border-b border-line/60 align-top">
+                    <tr
+                      key={tool.id}
+                      className={[
+                        "cursor-pointer border-b border-line/60 align-top transition",
+                        "hover:bg-panel/40",
+                        isSelected ? "bg-accent/5" : "",
+                      ].join(" ")}
+                      onClick={() => {
+                        router.push(
+                          `/company/panol/equipos?tab=ficha-equipo&equipmentId=${encodeURIComponent(
+                            tool.id,
+                          )}`,
+                        );
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(
+                            `/company/panol/equipos?tab=ficha-equipo&equipmentId=${encodeURIComponent(
+                              tool.id,
+                            )}`,
+                          );
+                        }
+                      }}
+                      role="link"
+                      tabIndex={0}
+                    >
                       <td className="py-2 pr-2 align-middle font-semibold text-foreground">
                         {tool.codigo}
                       </td>
@@ -726,7 +799,7 @@ export function EquipmentsManager({
                       </td>
                       <td className="py-2 pr-2 align-middle text-muted">
                         <div className="max-w-[14rem] break-words">
-                          {getLocationLabel(tool, locationById)}
+                          {getCurrentHolderLabel(tool, locationById)}
                         </div>
                       </td>
                       <td className="py-2 pr-2 align-middle text-muted">
@@ -755,7 +828,10 @@ export function EquipmentsManager({
                         {tool.image_url ? (
                           <button
                             className="flex items-center gap-2 text-left transition hover:opacity-80"
-                            onClick={() => openImagePreview(tool)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openImagePreview(tool);
+                            }}
                             type="button"
                           >
                             <img
@@ -769,11 +845,19 @@ export function EquipmentsManager({
                           "Pendiente"
                         )}
                       </td>
-                      <td className="py-2 align-middle">
+                      <td
+                        className="py-2 align-middle"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                        }}
+                      >
                         <div className="flex items-center gap-2">
                           <button
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-foreground transition hover:bg-panel"
-                            onClick={() => openEditEquipmentModal(tool)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openEditEquipmentModal(tool);
+                            }}
                             title="Editar"
                             type="button"
                           >
@@ -788,14 +872,17 @@ export function EquipmentsManager({
                             }}
                           >
                             <input name="tool_id" type="hidden" value={tool.id} />
-                        <PendingButton
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"
-                          title="Eliminar"
-                          pendingLabel=""
-                          type="submit"
-                        >
-                          <TrashIcon />
-                        </PendingButton>
+                            <PendingButton
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                              }}
+                              title="Eliminar"
+                              pendingLabel=""
+                              type="submit"
+                            >
+                              <TrashIcon />
+                            </PendingButton>
                           </form>
                         </div>
                       </td>
@@ -1011,6 +1098,13 @@ export function EquipmentsManager({
             ) : null}
           </div>
         </section>
+      ) : null}
+
+      {activeTab === "ficha-equipo" ? (
+        <EquipoFichaContent
+          backHref="/company/panol/equipos?tab=equipos"
+          detail={selectedEquipmentDetail}
+        />
       ) : null}
     </div>
   );

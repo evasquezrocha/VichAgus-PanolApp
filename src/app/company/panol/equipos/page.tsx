@@ -3,6 +3,7 @@ import { FlashBanner } from "@/components/ui/flash-banner";
 import { getFlashMessage } from "@/lib/flash";
 import { requireCompanyAdmin } from "@/server/auth/guards";
 import {
+  getEquipmentDetail,
   listEquipmentCustomFieldValues,
   listEquipmentCustomFields,
   listEquipmentGroups,
@@ -30,7 +31,13 @@ function getSingleSearchParam(
 }
 
 function getActiveTab(value: string | string[] | undefined) {
-  return getSingleSearchParam(value) === "grupos" ? "grupos" : "equipos";
+  const tab = getSingleSearchParam(value);
+
+  if (tab === "grupos" || tab === "ficha-equipo") {
+    return tab;
+  }
+
+  return "equipos";
 }
 
 export default async function EquiposPage({
@@ -47,6 +54,11 @@ export default async function EquiposPage({
   const params = await searchParams;
   const flash = await getFlashMessage(searchParams);
   const activeTab = getActiveTab(params.tab);
+  const selectedEquipmentId = getSingleSearchParam(params.equipmentId);
+  const selectedEquipmentDetail =
+    activeTab === "ficha-equipo" && selectedEquipmentId
+      ? await getEquipmentDetail(selectedEquipmentId)
+      : null;
   const defaultLocationId =
     locations.find((location) => location.is_default)?.id ?? locations[0]?.id ?? "";
 
@@ -59,6 +71,8 @@ export default async function EquiposPage({
           customFieldValues={customFieldValues}
           customFields={customFields}
           groups={groups}
+          selectedEquipmentDetail={selectedEquipmentDetail}
+          selectedEquipmentId={selectedEquipmentId}
           equipments={equipments}
           locations={locations}
           defaultLocationId={defaultLocationId}

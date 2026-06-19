@@ -18,6 +18,7 @@ export type Tool = {
   descripcion: string;
   cantidad: number;
   unidad: string;
+  estado: string | null;
   marca: string | null;
   modelo: string | null;
   image_url: string | null;
@@ -50,4 +51,42 @@ export type ToolCustomFieldValue = {
   value_text: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type ToolAllocationSummary = {
+  id: string;
+  employee_id: string | null;
+  employee_name: string | null;
+  quantity: number;
+  assigned_at: string;
+};
+
+export type ToolUnitSummary = {
+  unit_number: number;
+  employee_id: string | null;
+  employee_name: string | null;
+  allocation_id: string | null;
+};
+
+export type ToolDetailCustomFieldValue = {
+  id: string;
+  codigo: string;
+  nombre: string;
+  field_type: ToolCustomFieldType;
+  value_text: string | null;
+};
+
+export type ToolDetail = {
+  tool: Tool;
+  group: ToolGroup | null;
+  location: {
+    id: string;
+    nombre: string;
+    is_default: boolean;
+  } | null;
+  custom_field_values: ToolDetailCustomFieldValue[];
+  allocations: ToolAllocationSummary[];
+  units: ToolUnitSummary[];
+  assigned_quantity: number;
+  unassigned_quantity: number;
 };

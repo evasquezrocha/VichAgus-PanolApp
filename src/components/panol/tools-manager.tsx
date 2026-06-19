@@ -7,21 +7,27 @@ import {
   updateToolAction,
 } from "@/actions/panol.actions";
 import { PendingButton } from "@/components/ui/pending-button";
+import { ToolFichaContent } from "@/components/panol/tool-ficha-content";
+import { getStatusSelectValue } from "@/lib/item-status";
 import type {
   Tool,
+  ToolDetail,
   ToolCustomField,
   ToolCustomFieldValue,
   ToolGroup,
 } from "@/types/panol";
 import type { PanolLocation } from "@/types/ubicaciones";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type ToolsManagerProps = {
-  activeTab: "herramientas" | "grupos";
+  activeTab: "herramientas" | "grupos" | "ficha-herramienta";
   customFields: ToolCustomField[];
   customFieldValues: ToolCustomFieldValue[];
   groups: ToolGroup[];
+  selectedToolDetail: ToolDetail | null;
+  selectedToolId: string | null;
   tools: Tool[];
   locations: PanolLocation[];
   defaultLocationId: string;
@@ -38,6 +44,7 @@ type SortKey =
   | "ubicacion"
   | "cantidad"
   | "unidad"
+  | "estado"
   | "marca"
   | "modelo"
   | `custom:${string}`;
@@ -218,6 +225,22 @@ function ToolFormFields({
         />
       </label>
       <label className="block">
+        <span className="text-sm font-medium">Estado</span>
+        <select
+          className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
+          name="estado"
+          defaultValue={getStatusSelectValue(tool?.estado)}
+          required
+        >
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+          {tool?.estado &&
+          !["activo", "inactivo"].includes(tool.estado.trim().toLowerCase()) ? (
+            <option value={tool.estado}>{tool.estado}</option>
+          ) : null}
+        </select>
+      </label>
+      <label className="block">
         <span className="text-sm font-medium">MARCA</span>
         <input
           className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
@@ -341,10 +364,13 @@ export function ToolsManager({
   customFields,
   customFieldValues,
   groups,
+  selectedToolDetail,
+  selectedToolId,
   tools,
   locations,
   defaultLocationId,
 }: ToolsManagerProps) {
+  const router = useRouter();
   const [toolModalState, setToolModalState] = useState<ToolModalState | null>(null);
   const [imagePreviewTool, setImagePreviewTool] = useState<Tool | null>(null);
   const [search, setSearch] = useState("");
@@ -430,6 +456,7 @@ export function ToolsManager({
         tool.marca ?? "",
         tool.modelo ?? "",
         tool.unidad,
+        tool.estado ?? "",
         getLocationLabel(tool, locationById),
         group ? `${group.codigo} ${group.descripcion}` : "",
         ...activeCustomFields.map((field) =>
@@ -465,6 +492,8 @@ export function ToolsManager({
           return tool.cantidad;
         case "unidad":
           return tool.unidad;
+        case "estado":
+          return tool.estado ?? "";
         case "marca":
           return tool.marca ?? "";
         case "modelo":
@@ -546,6 +575,18 @@ export function ToolsManager({
           Listado de Herramientas
         </TabLink>
         <TabLink
+          href={
+            selectedToolId
+              ? `/company/panol/herramientas?tab=ficha-herramienta&toolId=${encodeURIComponent(
+                  selectedToolId,
+                )}`
+              : "/company/panol/herramientas?tab=ficha-herramienta"
+          }
+          active={activeTab === "ficha-herramienta"}
+        >
+          Ficha Herramienta
+        </TabLink>
+        <TabLink
           href="/company/panol/herramientas?tab=grupos"
           active={activeTab === "grupos"}
         >
@@ -597,6 +638,7 @@ export function ToolsManager({
                 <col className="w-32" />
                 <col className="w-20" />
                 <col className="w-20" />
+                <col className="w-24" />
                 <col className="w-24" />
                 <col className="w-24" />
                 {activeCustomFields.map((field) => (
@@ -670,6 +712,16 @@ export function ToolsManager({
                   <th className="pb-2 pr-2 font-semibold">
                     <button
                       className="inline-flex items-center font-semibold"
+                      onClick={() => toggleSort("estado")}
+                      type="button"
+                    >
+                      Estado
+                      <SortIcon direction={getSortDirectionForKey("estado")} />
+                    </button>
+                  </th>
+                  <th className="pb-2 pr-2 font-semibold">
+                    <button
+                      className="inline-flex items-center font-semibold"
                       onClick={() => toggleSort("marca")}
                       type="button"
                     >
@@ -709,9 +761,36 @@ export function ToolsManager({
                 {sortedTools.map((tool) => {
                   const group = groupById.get(tool.tool_group_id);
                   const toolCustomValues = customFieldValuesByToolId.get(tool.id);
+                  const isSelected = selectedToolId === tool.id;
 
                   return (
-                    <tr key={tool.id} className="border-b border-line/60 align-top">
+                    <tr
+                      key={tool.id}
+                      className={[
+                        "cursor-pointer border-b border-line/60 align-top transition",
+                        "hover:bg-panel/40",
+                        isSelected ? "bg-accent/5" : "",
+                      ].join(" ")}
+                      onClick={() => {
+                        router.push(
+                          `/company/panol/herramientas?tab=ficha-herramienta&toolId=${encodeURIComponent(
+                            tool.id,
+                          )}`,
+                        );
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          router.push(
+                            `/company/panol/herramientas?tab=ficha-herramienta&toolId=${encodeURIComponent(
+                              tool.id,
+                            )}`,
+                          );
+                        }
+                      }}
+                      role="link"
+                      tabIndex={0}
+                    >
                       <td className="py-2 pr-2 align-middle font-semibold text-foreground">
                         {tool.codigo}
                       </td>
@@ -733,6 +812,9 @@ export function ToolsManager({
                         {tool.unidad}
                       </td>
                       <td className="py-2 pr-2 align-middle text-muted">
+                        {tool.estado ?? "-"}
+                      </td>
+                      <td className="py-2 pr-2 align-middle text-muted">
                         {tool.marca ?? "-"}
                       </td>
                       <td className="py-2 pr-2 align-middle text-muted">
@@ -752,7 +834,10 @@ export function ToolsManager({
                         {tool.image_url ? (
                           <button
                             className="flex items-center gap-2 text-left transition hover:opacity-80"
-                            onClick={() => openImagePreview(tool)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openImagePreview(tool);
+                            }}
                             type="button"
                           >
                             <img
@@ -766,11 +851,19 @@ export function ToolsManager({
                           "Pendiente"
                         )}
                       </td>
-                      <td className="py-2 align-middle">
+                      <td
+                        className="py-2 align-middle"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                        }}
+                      >
                         <div className="flex items-center gap-2">
                           <button
                             className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-foreground transition hover:bg-panel"
-                            onClick={() => openEditToolModal(tool)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openEditToolModal(tool);
+                            }}
                             title="Editar"
                             type="button"
                           >
@@ -785,14 +878,17 @@ export function ToolsManager({
                             }}
                           >
                             <input name="tool_id" type="hidden" value={tool.id} />
-                        <PendingButton
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"
-                          title="Eliminar"
-                          pendingLabel=""
-                          type="submit"
-                        >
-                          <TrashIcon />
-                        </PendingButton>
+                            <PendingButton
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                              }}
+                              title="Eliminar"
+                              pendingLabel=""
+                              type="submit"
+                            >
+                              <TrashIcon />
+                            </PendingButton>
                           </form>
                         </div>
                       </td>
@@ -802,7 +898,7 @@ export function ToolsManager({
 
                 {sortedTools.length === 0 ? (
                   <tr>
-                    <td className="py-10 text-center text-muted" colSpan={10 + activeCustomFields.length}>
+                    <td className="py-10 text-center text-muted" colSpan={11 + activeCustomFields.length}>
                       No hay herramientas que coincidan con la busqueda.
                     </td>
                   </tr>
@@ -1008,6 +1104,13 @@ export function ToolsManager({
             ) : null}
           </div>
         </section>
+      ) : null}
+
+      {activeTab === "ficha-herramienta" ? (
+        <ToolFichaContent
+          backHref="/company/panol/herramientas?tab=herramientas"
+          detail={selectedToolDetail}
+        />
       ) : null}
     </div>
   );

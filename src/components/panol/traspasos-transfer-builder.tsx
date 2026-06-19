@@ -3,6 +3,7 @@
 import { createEmployeeTransferAction } from "@/actions/traspasos.actions";
 import { PendingButton } from "@/components/ui/pending-button";
 import { SignaturePad } from "@/components/ui/signature-pad";
+import { isInactiveItemStatus } from "@/lib/item-status";
 import type { Employee } from "@/types/empleados";
 import type { TransferEquipmentRow, TransferToolRow } from "@/types/traspasos";
 import type { PanolLocation } from "@/types/ubicaciones";
@@ -159,12 +160,16 @@ export function TraspasosTransferBuilder({
 
     if (origin.type === "employee") {
       for (const equipment of equipments) {
-        if (equipment.current_employee_id === origin.id) {
+        if (equipment.current_employee_id === origin.id && !isInactiveItemStatus(equipment.estado)) {
           availableEquipmentIds.add(equipment.id);
         }
       }
 
       for (const tool of tools) {
+        if (isInactiveItemStatus(tool.estado)) {
+          continue;
+        }
+
         const employeeQuantity =
           tool.allocations.find((allocation) => allocation.employee_id === origin.id)?.quantity ?? 0;
         if (employeeQuantity > 0) {
@@ -173,12 +178,20 @@ export function TraspasosTransferBuilder({
       }
     } else {
       for (const equipment of equipments) {
-        if (!equipment.current_employee_id && equipment.ubicacion_id === origin.id) {
+        if (
+          !equipment.current_employee_id &&
+          equipment.ubicacion_id === origin.id &&
+          !isInactiveItemStatus(equipment.estado)
+        ) {
           availableEquipmentIds.add(equipment.id);
         }
       }
 
       for (const tool of tools) {
+        if (isInactiveItemStatus(tool.estado)) {
+          continue;
+        }
+
         if (tool.ubicacion_id !== origin.id) {
           continue;
         }

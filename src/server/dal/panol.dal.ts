@@ -7,7 +7,16 @@ import type {
   ToolGroupInput,
   ToolInput,
 } from "@/schemas/panol.schema";
-import type { Tool, ToolCustomField, ToolCustomFieldValue, ToolGroup } from "@/types/panol";
+import type {
+  Tool,
+  ToolAllocationSummary,
+  ToolCustomField,
+  ToolCustomFieldValue,
+  ToolDetail,
+  ToolDetailCustomFieldValue,
+  ToolGroup,
+  ToolUnitSummary,
+} from "@/types/panol";
 
 async function getCurrentCompanyIdForCurrentCompanyAdmin() {
   const currentProfile = await requireCompanyAdmin();
@@ -31,6 +40,49 @@ function buildEmployeeName(
 
   const fullName = `${employee.nombres} ${employee.apellidos ?? ""}`.trim();
   return fullName.length > 0 ? fullName : employee.rut;
+}
+
+function buildToolUnits(
+  allocations: ToolAllocationSummary[],
+  totalQuantity: number,
+) {
+  const units: ToolUnitSummary[] = [];
+  let unitNumber = 1;
+  let assignedQuantity = 0;
+
+  for (const allocation of allocations) {
+    const isAssigned = allocation.employee_id !== null;
+
+    if (isAssigned) {
+      assignedQuantity += allocation.quantity;
+    }
+
+    for (let quantityIndex = 0; quantityIndex < allocation.quantity; quantityIndex += 1) {
+      units.push({
+        unit_number: unitNumber,
+        employee_id: allocation.employee_id,
+        employee_name: allocation.employee_name,
+        allocation_id: allocation.id,
+      });
+      unitNumber += 1;
+    }
+  }
+
+  while (unitNumber <= totalQuantity) {
+    units.push({
+      unit_number: unitNumber,
+      employee_id: null,
+      employee_name: null,
+      allocation_id: null,
+    });
+    unitNumber += 1;
+  }
+
+  return {
+    units,
+    assignedQuantity,
+    unassignedQuantity: Math.max(totalQuantity - assignedQuantity, 0),
+  };
 }
 
 export async function getCurrentCompanySlugForCurrentCompanyAdmin() {
@@ -166,6 +218,157 @@ export async function listToolsForCurrentCompanyAdmin(): Promise<Tool[]> {
   });
 }
 
+export async function getToolDetailForCurrentCompanyAdmin(toolId: string): Promise<ToolDetail | null> {
+  const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
+
+  const admin = createSupabaseAdminClient();
+  const [toolResult, allocationsResult, employeesResult, groupsResult, locationsResult, customFieldsResult, customFieldValuesResult] = await Promise.all([
+    admin
+      .from("tools")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("id", toolId)
+      .single(),
+    admin
+      .from("employee_tool_allocations")
+      .select("id, employee_id, quantity, assigned_at")
+      .eq("company_id", companyId)
+      .eq("tool_id", toolId)
+      .order("assigned_at", { ascending: true })
+      .order("created_at", { ascending: true }),
+    admin
+      .from("employees")
+      .select("id, nombres, apellidos, rut")
+      .eq("company_id", companyId),
+    admin
+      .from("tool_groups")
+      .select("*")
+      .eq("company_id", companyId)
+      .order("codigo", { ascending: true }),
+    admin
+      .from("panol_locations")
+      .select("id, nombre, is_default")
+      .eq("company_id", companyId),
+    admin
+      .from("tool_custom_fields")
+      .select("id, codigo, nombre, field_type")
+      .eq("company_id", companyId)
+      .order("sort_order", { ascending: true })
+      .order("codigo", { ascending: true }),
+    admin
+      .from("tool_custom_field_values")
+      .select("custom_field_id, value_text")
+      .eq("company_id", companyId)
+      .eq("tool_id", toolId),
+  ]);
+
+  if (toolResult.error) {
+    if (toolResult.error.code === "PGRST116") {
+      return null;
+    }
+
+    throw new Error(toolResult.error.message);
+  }
+
+  if (allocationsResult.error) {
+    throw new Error(allocationsResult.error.message);
+  }
+
+  if (employeesResult.error) {
+    throw new Error(employeesResult.error.message);
+  }
+
+  if (groupsResult.error) {
+    throw new Error(groupsResult.error.message);
+  }
+
+  if (locationsResult.error) {
+    throw new Error(locationsResult.error.message);
+  }
+
+  if (customFieldsResult.error) {
+    throw new Error(customFieldsResult.error.message);
+  }
+
+  if (customFieldValuesResult.error) {
+    throw new Error(customFieldValuesResult.error.message);
+  }
+
+  const tool = toolResult.data as Tool;
+  const groupById = new Map(
+    (groupsResult.data ?? []).map((group) => [group.id, group]),
+  );
+  const locationById = new Map(
+    (locationsResult.data ?? []).map((location) => [location.id, location]),
+  );
+  const employeeById = new Map(
+    (employeesResult.data ?? []).map((employee) => [
+      employee.id,
+      {
+        nombres: employee.nombres,
+        apellidos: employee.apellidos,
+        rut: employee.rut,
+      },
+    ]),
+  );
+  const customFieldById = new Map(
+    (customFieldsResult.data ?? []).map((field) => [field.id, field]),
+  );
+
+  const allocations: ToolAllocationSummary[] = (allocationsResult.data ?? []).map((allocation) => {
+    const employee = allocation.employee_id ? employeeById.get(allocation.employee_id) : null;
+
+    return {
+      id: allocation.id,
+      employee_id: allocation.employee_id,
+      employee_name: buildEmployeeName(employee),
+      quantity: allocation.quantity,
+      assigned_at: allocation.assigned_at,
+    };
+  });
+  const { units, assignedQuantity, unassignedQuantity } = buildToolUnits(
+    allocations,
+    tool.cantidad,
+  );
+  const custom_field_values: ToolDetailCustomFieldValue[] = (customFieldValuesResult.data ?? [])
+    .map((value) => {
+      const field = customFieldById.get(value.custom_field_id);
+
+      if (!field) {
+        return null;
+      }
+
+      return {
+        id: field.id,
+        codigo: field.codigo,
+        nombre: field.nombre,
+        field_type: field.field_type,
+        value_text: value.value_text,
+      };
+    })
+    .filter((value): value is ToolDetailCustomFieldValue => value !== null);
+
+  return {
+    tool: {
+      ...(tool as Tool),
+      ubicacion_nombre: locationById.get(tool.ubicacion_id)?.nombre ?? null,
+      ubicacion_display_name: tool.ubicacion_id
+        ? locationById.get(tool.ubicacion_id)?.nombre ?? "PAÃ‘OL"
+        : "PAÃ‘OL",
+      assigned_employee_id: null,
+      assigned_employee_name: null,
+      ubicacion_id: tool.ubicacion_id,
+    } as Tool,
+    group: groupById.get(tool.tool_group_id) ?? null,
+    location: locationById.get(tool.ubicacion_id) ?? null,
+    custom_field_values,
+    allocations,
+    units,
+    assigned_quantity: assignedQuantity,
+    unassigned_quantity: unassignedQuantity,
+  };
+}
+
 export async function createToolForCurrentCompanyAdmin(
   input: ToolInput & { image_url: string | null; image_dropbox_path: string | null },
 ): Promise<Tool> {
@@ -182,6 +385,7 @@ export async function createToolForCurrentCompanyAdmin(
       descripcion: input.descripcion,
       cantidad: input.cantidad,
       unidad: input.unidad.toUpperCase(),
+      estado: input.estado?.trim() || null,
       marca: input.marca?.trim() || null,
       modelo: input.modelo?.trim() || null,
       image_url: input.image_url,
@@ -216,6 +420,7 @@ export async function updateToolForCurrentCompanyAdmin(
       descripcion: input.descripcion,
       cantidad: input.cantidad,
       unidad: input.unidad.toUpperCase(),
+      estado: input.estado?.trim() || null,
       marca: input.marca?.trim() || null,
       modelo: input.modelo?.trim() || null,
       image_url: input.image_url,

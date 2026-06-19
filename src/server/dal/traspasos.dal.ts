@@ -14,6 +14,7 @@ import type {
 } from "@/types/traspasos";
 import type { Equipment } from "@/types/equipos";
 import type { Tool } from "@/types/panol";
+import { isInactiveItemStatus } from "@/lib/item-status";
 
 type TransferItemInput =
   | { item_type: "equipment"; equipment_id: string; quantity?: never; tool_id?: never }
@@ -224,6 +225,59 @@ async function listLocationUsersById(companyId: string) {
   );
 }
 
+async function ensureTransferItemsAreActive(
+  companyId: string,
+  items: TransferItemInput[],
+) {
+  const admin = createSupabaseAdminClient();
+  const equipmentIds = items
+    .filter((item): item is Extract<TransferItemInput, { item_type: "equipment" }> => item.item_type === "equipment")
+    .map((item) => item.equipment_id);
+  const toolIds = items
+    .filter((item): item is Extract<TransferItemInput, { item_type: "tool" }> => item.item_type === "tool")
+    .map((item) => item.tool_id);
+
+  if (equipmentIds.length > 0) {
+    const { data, error } = await admin
+      .from("equipments")
+      .select("id, estado")
+      .eq("company_id", companyId)
+      .in("id", equipmentIds);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const inactiveEquipmentIds = (data ?? [])
+      .filter((equipment) => isInactiveItemStatus(equipment.estado))
+      .map((equipment) => equipment.id);
+
+    if (inactiveEquipmentIds.length > 0) {
+      throw new Error("No se pueden usar equipos inactivos en un traspaso.");
+    }
+  }
+
+  if (toolIds.length > 0) {
+    const { data, error } = await admin
+      .from("tools")
+      .select("id, estado")
+      .eq("company_id", companyId)
+      .in("id", toolIds);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const inactiveToolIds = (data ?? [])
+      .filter((tool) => isInactiveItemStatus(tool.estado))
+      .map((tool) => tool.id);
+
+    if (inactiveToolIds.length > 0) {
+      throw new Error("No se pueden usar herramientas inactivas en un traspaso.");
+    }
+  }
+}
+
 export async function listEmployeeTransfersForCurrentCompanyAdmin(): Promise<
   EmployeeTransfer[]
 > {
@@ -267,7 +321,7 @@ export async function listEmployeeTransfersForCurrentCompanyAdmin(): Promise<
     admin
       .from("tools")
       .select(
-        "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
+        "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, estado, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
       )
       .eq("company_id", companyId),
     listLocationUsersById(companyId),
@@ -382,7 +436,7 @@ export async function getEmployeeTransferForCurrentCompanyAdmin(
       admin
         .from("tools")
         .select(
-          "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
+          "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, estado, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
         )
         .eq("company_id", companyId),
       listLocationUsersById(companyId),
@@ -469,6 +523,8 @@ export async function createEmployeeTransferForCurrentCompanyAdmin(input: {
 }) {
   const { profile, companyId, isAdmin } = await getTransferContext();
   const admin = createSupabaseAdminClient();
+
+  await ensureTransferItemsAreActive(companyId, input.items);
 
   if (!isAdmin) {
     const allowedLocationIds = new Set(

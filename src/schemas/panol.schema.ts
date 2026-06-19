@@ -17,6 +17,7 @@ export const toolSchema = z.object({
   descripcion: trimString.max(200),
   cantidad: z.coerce.number().int().min(0),
   unidad: trimString.max(24),
+  estado: trimString.max(40),
   marca: z.string().trim().max(80).optional().nullable(),
   modelo: z.string().trim().max(80).optional().nullable(),
 });

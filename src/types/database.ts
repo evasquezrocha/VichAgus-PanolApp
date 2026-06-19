@@ -606,6 +606,7 @@ export type Database = {
           descripcion: string;
           cantidad: number;
           unidad: string;
+          estado: string | null;
           marca: string | null;
           modelo: string | null;
           image_url: string | null;
@@ -622,6 +623,7 @@ export type Database = {
           descripcion: string;
           cantidad?: number;
           unidad: string;
+          estado?: string | null;
           marca?: string | null;
           modelo?: string | null;
           image_url?: string | null;
@@ -638,6 +640,7 @@ export type Database = {
           descripcion?: string;
           cantidad?: number;
           unidad?: string;
+          estado?: string | null;
           marca?: string | null;
           modelo?: string | null;
           image_url?: string | null;

@@ -7,7 +7,14 @@ import type {
   EquipmentGroupInput,
   EquipmentInput,
 } from "@/schemas/equipos.schema";
-import type { Equipment, EquipmentCustomField, EquipmentCustomFieldValue, EquipmentGroup } from "@/types/equipos";
+import type {
+  Equipment,
+  EquipmentCustomField,
+  EquipmentCustomFieldValue,
+  EquipmentDetail,
+  EquipmentGroup,
+  EquipmentHistoryEntry,
+} from "@/types/equipos";
 
 async function getCurrentCompanyIdForCurrentCompanyAdmin() {
   const currentProfile = await requireCompanyAdmin();
@@ -42,6 +49,35 @@ function buildEmployeeName(
 
   const fullName = `${employee.nombres} ${employee.apellidos ?? ""}`.trim();
   return fullName.length > 0 ? fullName : employee.rut;
+}
+
+function buildEndpointLabel(
+  endpoint:
+    | {
+        type: string;
+        employee_id: string | null;
+        location_id: string | null;
+      }
+    | null
+    | undefined,
+  employeeById: Map<string, { nombres: string; apellidos: string | null; rut: string | null }>,
+  locationById: Map<string, { nombre: string; is_default: boolean }>,
+) {
+  if (!endpoint) {
+    return "Sin definir";
+  }
+
+  if (endpoint.type === "employee") {
+    const employee = endpoint.employee_id ? employeeById.get(endpoint.employee_id) : null;
+    return `Empleado: ${buildEmployeeName(employee) ?? "Sin asignar"}`;
+  }
+
+  const location = endpoint.location_id ? locationById.get(endpoint.location_id) : null;
+  if (!location) {
+    return "Ubicación: PAÃ‘OL";
+  }
+
+  return `Ubicación: ${location.is_default ? "PAÃ‘OL" : location.nombre}`;
 }
 
 export async function getCurrentCompanySlugForCurrentCompanyAdmin() {
@@ -179,6 +215,177 @@ export async function listEquipmentsForCurrentCompanyAdmin(): Promise<Equipment[
       assigned_employee_name: buildEmployeeName(assignedEmployee),
     };
   });
+}
+
+export async function getEquipmentDetailForCurrentCompanyAdmin(
+  equipmentId: string,
+): Promise<EquipmentDetail | null> {
+  const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
+
+  const admin = createSupabaseAdminClient();
+  const [equipmentResult, assignmentsResult, employeesResult, groupsResult, locationsResult, itemsResult, transfersResult] =
+    await Promise.all([
+      admin
+        .from("equipments")
+        .select("*")
+        .eq("company_id", companyId)
+        .eq("id", equipmentId)
+        .single(),
+      admin
+        .from("employee_equipment_assignments")
+        .select("equipment_id, employee_id, assigned_at")
+        .eq("company_id", companyId)
+        .eq("equipment_id", equipmentId),
+      admin
+        .from("employees")
+        .select("id, nombres, apellidos, rut")
+        .eq("company_id", companyId),
+      admin
+        .from("equipment_groups")
+        .select("*")
+        .eq("company_id", companyId)
+        .order("codigo", { ascending: true }),
+      admin
+        .from("panol_locations")
+        .select("id, nombre, is_default")
+        .eq("company_id", companyId),
+      admin
+        .from("employee_transfer_items")
+        .select("transfer_id, equipment_id, created_at")
+        .eq("equipment_id", equipmentId),
+      admin
+        .from("employee_transfers")
+        .select(
+          "id, origin_type, origin_employee_id, origin_location_id, destination_type, destination_employee_id, destination_location_id, transfer_date, transfer_time",
+        )
+        .eq("company_id", companyId),
+    ]);
+
+  if (equipmentResult.error) {
+    if (equipmentResult.error.code === "PGRST116") {
+      return null;
+    }
+
+    throw new Error(equipmentResult.error.message);
+  }
+
+  if (assignmentsResult.error) {
+    throw new Error(assignmentsResult.error.message);
+  }
+  if (employeesResult.error) {
+    throw new Error(employeesResult.error.message);
+  }
+  if (groupsResult.error) {
+    throw new Error(groupsResult.error.message);
+  }
+  if (locationsResult.error) {
+    throw new Error(locationsResult.error.message);
+  }
+  if (itemsResult.error) {
+    throw new Error(itemsResult.error.message);
+  }
+  if (transfersResult.error) {
+    throw new Error(transfersResult.error.message);
+  }
+
+  const equipment = equipmentResult.data as Equipment;
+  const assignment = (assignmentsResult.data ?? [])[0] ?? null;
+  const employeeById = new Map(
+    (employeesResult.data ?? []).map((employee) => [
+      employee.id,
+      {
+        nombres: employee.nombres,
+        apellidos: employee.apellidos,
+        rut: employee.rut,
+      },
+    ]),
+  );
+  const locationById = new Map(
+    (locationsResult.data ?? []).map((location) => [
+      location.id,
+      {
+        nombre: location.nombre,
+        is_default: location.is_default,
+      },
+    ]),
+  );
+  const groupById = new Map((groupsResult.data ?? []).map((group) => [group.id, group]));
+  const transferById = new Map(
+    (transfersResult.data ?? []).map((transfer) => [transfer.id, transfer]),
+  );
+
+  const history: EquipmentHistoryEntry[] = (itemsResult.data ?? [])
+    .map((item) => {
+      const transfer = transferById.get(item.transfer_id);
+
+      if (!transfer) {
+        return null;
+      }
+
+      const originLabel = buildEndpointLabel(
+        {
+          type: transfer.origin_type,
+          employee_id: transfer.origin_employee_id,
+          location_id: transfer.origin_location_id,
+        },
+        employeeById,
+        locationById,
+      );
+      const destinationLabel = buildEndpointLabel(
+        {
+          type: transfer.destination_type,
+          employee_id: transfer.destination_employee_id,
+          location_id: transfer.destination_location_id,
+        },
+        employeeById,
+        locationById,
+      );
+      const assignedToLabel =
+        transfer.destination_type === "employee"
+          ? destinationLabel.replace(/^Empleado: /, "")
+          : transfer.destination_type === "location"
+            ? destinationLabel.replace(/^Ubicación: /, "")
+            : null;
+
+      return {
+        transfer_id: transfer.id,
+        transfer_date: transfer.transfer_date,
+        transfer_time: transfer.transfer_time,
+        origin_label: originLabel,
+        destination_label: destinationLabel,
+        assigned_to_label: assignedToLabel,
+        movement_label: `${originLabel} → ${destinationLabel}`,
+      };
+    })
+    .filter((entry): entry is EquipmentHistoryEntry => entry !== null)
+    .sort((a, b) => {
+      const left = `${a.transfer_date}T${a.transfer_time}`;
+      const right = `${b.transfer_date}T${b.transfer_time}`;
+      return right.localeCompare(left);
+    });
+
+  const location = locationById.get(equipment.ubicacion_id) ?? null;
+  const assignedEmployee = assignment?.employee_id
+    ? employeeById.get(assignment.employee_id)
+    : null;
+
+  return {
+    equipment: {
+      ...(equipment as Equipment),
+      ubicacion_nombre: location?.nombre ?? null,
+      ubicacion_display_name: assignment?.employee_id
+        ? "Asignado a Empleado"
+        : location?.nombre ?? "PAÃ‘OL",
+      assigned_employee_id: assignment?.employee_id ?? null,
+      assigned_employee_name: buildEmployeeName(assignedEmployee),
+    },
+    group: groupById.get(equipment.tool_group_id) ?? null,
+    current_holder_label: assignment?.employee_id
+      ? `Empleado: ${buildEmployeeName(assignedEmployee) ?? "Sin asignar"}`
+      : `Ubicación: ${location?.is_default ? "PAÃ‘OL" : location?.nombre ?? "Sin ubicación"}`,
+    current_holder_type: assignment?.employee_id ? "employee" : "location",
+    history,
+  };
 }
 
 export async function createEquipmentForCurrentCompanyAdmin(

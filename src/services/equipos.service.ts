@@ -7,6 +7,7 @@ import {
   deleteEquipmentForCurrentCompanyAdmin,
   deleteEquipmentCustomFieldForCurrentCompanyAdmin,
   getCurrentCompanySlugForCurrentCompanyAdmin,
+  getEquipmentDetailForCurrentCompanyAdmin,
   listEquipmentCustomFieldValuesForCurrentCompanyAdmin,
   listEquipmentCustomFieldsForCurrentCompanyAdmin,
   listEquipmentGroupsForCurrentCompanyAdmin,
@@ -38,6 +39,10 @@ export async function listEquipmentGroups() {
 
 export async function listEquipments() {
   return listEquipmentsForCurrentCompanyAdmin();
+}
+
+export async function getEquipmentDetail(equipmentId: string) {
+  return getEquipmentDetailForCurrentCompanyAdmin(equipmentId);
 }
 
 export async function listEquipmentCustomFields() {

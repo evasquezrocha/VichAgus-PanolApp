@@ -53,3 +53,21 @@ export type EquipmentCustomFieldValue = {
   updated_at: string;
 };
 
+export type EquipmentHistoryEntry = {
+  transfer_id: string;
+  transfer_date: string;
+  transfer_time: string;
+  origin_label: string;
+  destination_label: string;
+  assigned_to_label: string | null;
+  movement_label: string;
+};
+
+export type EquipmentDetail = {
+  equipment: Equipment;
+  group: EquipmentGroup | null;
+  current_holder_label: string;
+  current_holder_type: "employee" | "location";
+  history: EquipmentHistoryEntry[];
+};
+

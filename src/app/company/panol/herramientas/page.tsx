@@ -3,6 +3,7 @@ import { FlashBanner } from "@/components/ui/flash-banner";
 import { getFlashMessage } from "@/lib/flash";
 import { requireCompanyAdmin } from "@/server/auth/guards";
 import {
+  getToolDetail,
   listToolCustomFieldValues,
   listToolCustomFields,
   listToolGroups,
@@ -30,7 +31,13 @@ function getSingleSearchParam(
 }
 
 function getActiveTab(value: string | string[] | undefined) {
-  return getSingleSearchParam(value) === "grupos" ? "grupos" : "herramientas";
+  const tab = getSingleSearchParam(value);
+
+  if (tab === "grupos" || tab === "ficha-herramienta") {
+    return tab;
+  }
+
+  return "herramientas";
 }
 
 export default async function HerramientasPage({
@@ -47,6 +54,9 @@ export default async function HerramientasPage({
   const params = await searchParams;
   const flash = await getFlashMessage(searchParams);
   const activeTab = getActiveTab(params.tab);
+  const selectedToolId = getSingleSearchParam(params.toolId);
+  const selectedToolDetail =
+    activeTab === "ficha-herramienta" && selectedToolId ? await getToolDetail(selectedToolId) : null;
   const defaultLocationId =
     locations.find((location) => location.is_default)?.id ?? locations[0]?.id ?? "";
 
@@ -59,6 +69,8 @@ export default async function HerramientasPage({
           customFieldValues={customFieldValues}
           customFields={customFields}
           groups={groups}
+          selectedToolDetail={selectedToolDetail}
+          selectedToolId={selectedToolId}
           tools={tools}
           locations={locations}
           defaultLocationId={defaultLocationId}

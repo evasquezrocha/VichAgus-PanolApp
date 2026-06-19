@@ -71,6 +71,7 @@ export async function createToolAction(formData: FormData) {
       descripcion: formData.get("descripcion"),
       cantidad: formData.get("cantidad"),
       unidad: formData.get("unidad"),
+      estado: formData.get("estado"),
       marca: String(formData.get("marca") ?? "").trim() || null,
       modelo: String(formData.get("modelo") ?? "").trim() || null,
     });
@@ -106,6 +107,7 @@ export async function updateToolAction(formData: FormData) {
       descripcion: formData.get("descripcion"),
       cantidad: formData.get("cantidad"),
       unidad: formData.get("unidad"),
+      estado: formData.get("estado"),
       marca: String(formData.get("marca") ?? "").trim() || null,
       modelo: String(formData.get("modelo") ?? "").trim() || null,
     });

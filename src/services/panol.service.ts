@@ -7,6 +7,7 @@ import {
   deleteToolForCurrentCompanyAdmin,
   deleteToolCustomFieldForCurrentCompanyAdmin,
   getCurrentCompanySlugForCurrentCompanyAdmin,
+  getToolDetailForCurrentCompanyAdmin,
   listToolCustomFieldValuesForCurrentCompanyAdmin,
   listToolCustomFieldsForCurrentCompanyAdmin,
   listToolGroupsForCurrentCompanyAdmin,
@@ -38,6 +39,10 @@ export async function listToolGroups() {
 
 export async function listTools() {
   return listToolsForCurrentCompanyAdmin();
+}
+
+export async function getToolDetail(toolId: string) {
+  return getToolDetailForCurrentCompanyAdmin(toolId);
 }
 
 export async function listToolCustomFields() {
@@ -89,6 +94,7 @@ export async function createTool(
 
   return createToolForCurrentCompanyAdmin({
     ...input,
+    estado: input.estado,
     image_url: imageUrl,
     image_dropbox_path: imageDropboxPath,
   }).then(async (tool) => {
@@ -120,6 +126,7 @@ export async function updateTool(
 
   return updateToolForCurrentCompanyAdmin({
     ...input,
+    estado: input.estado,
     image_url: imageUrl,
     image_dropbox_path: imageDropboxPath,
   }).then(async (tool) => {
