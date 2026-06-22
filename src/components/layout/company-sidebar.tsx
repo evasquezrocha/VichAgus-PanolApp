@@ -129,6 +129,17 @@ function SlidersIcon() {
   );
 }
 
+function LayoutEditorIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M8 4v16" />
+      <path d="M13 4v16" />
+    </svg>
+  );
+}
+
 type CompanySidebarProps = {
   isExpanded: boolean;
   permissions: AppPermission[];
@@ -168,8 +179,11 @@ export function CompanySidebar({
   const canViewGeneralParameters = hasAnyPermission(permissions, [
     "company.access",
   ]);
+  const canViewLayoutEditor = hasAnyPermission(permissions, [
+    "company.users.manage",
+  ]);
   const canViewSettings =
-    canViewUsers || canViewRoles || canViewGeneralParameters;
+    canViewUsers || canViewRoles || canViewGeneralParameters || canViewLayoutEditor;
   const isPanolParentActive = pathname === "/company/panol";
   const isPanolSectionActive =
     pathname === "/company/panol/herramientas" ||
@@ -187,7 +201,8 @@ export function CompanySidebar({
     pathname === "/company/settings/users" ||
     pathname === "/company/settings/roles" ||
     pathname === "/company/settings/parametros-generales" ||
-    pathname === "/company/settings/campos-personalizados";
+    pathname === "/company/settings/campos-personalizados" ||
+    pathname === "/company/settings/edicion-de-layouts";
   const showPanolChildren = isExpanded && (isPanolOpen || isPanolSectionActive);
   const showSettingsChildren = isExpanded && (isSettingsOpen || isSettingsChildActive);
 
@@ -494,12 +509,36 @@ export function CompanySidebar({
                       }
                     : undefined
                 }
-              >
+                >
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
                   <SlidersIcon />
                 </span>
                 <span className="font-semibold">Campos Personalizados</span>
               </Link>
+              {canViewLayoutEditor ? (
+                <Link
+                  href="/company/settings/edicion-de-layouts"
+                  className={[
+                    "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                    pathname === "/company/settings/edicion-de-layouts"
+                      ? "font-semibold"
+                      : "text-current hover:bg-current/10",
+                  ].join(" ")}
+                  style={
+                    pathname === "/company/settings/edicion-de-layouts"
+                      ? {
+                          backgroundColor: activeBgColor,
+                          color: activeTextColor,
+                        }
+                      : undefined
+                  }
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                    <LayoutEditorIcon />
+                  </span>
+                  <span className="font-semibold">Edición de Layouts</span>
+                </Link>
+              ) : null}
             </div>
           ) : null}
         </div>

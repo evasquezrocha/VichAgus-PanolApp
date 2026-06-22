@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireCompanyAdmin, requirePermission } from "@/server/auth/guards";
 import type { RoleInput, UpdateRoleInput } from "@/schemas/role.schema";
 import {
@@ -18,8 +18,8 @@ function mapRolePermissions(role: AppRoleDefinition) {
 }
 
 async function fetchGlobalRoles() {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("app_roles")
     .select(
       "id, company_id, name, slug, description, permissions, is_system, is_active, created_at, updated_at",
@@ -42,8 +42,8 @@ function isTenantSafeRole(role: AppRoleDefinition) {
 }
 
 async function fetchTenantRoles(companyId: string) {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("app_roles")
     .select(
       "id, company_id, name, slug, description, permissions, is_system, is_active, created_at, updated_at",
@@ -59,15 +59,15 @@ async function fetchTenantRoles(companyId: string) {
 }
 
 export async function ensureTenantDefaultRoles(companyId: string) {
-  const admin = createSupabaseAdminClient();
   const globalRoles = (await fetchGlobalRoles()).filter((role) => isTenantSafeRole(role));
   const tenantRoles = await fetchTenantRoles(companyId);
+  const supabase = await createServerSupabaseClient();
 
   const existingBySlug = new Map(tenantRoles.map((role) => [role.slug, role]));
   const missingRoles = globalRoles.filter((role) => !existingBySlug.has(role.slug));
 
   if (missingRoles.length > 0) {
-    const { error } = await admin.from("app_roles").insert(
+    const { error } = await supabase.from("app_roles").insert(
       missingRoles.map((role) => ({
         company_id: companyId,
         name: role.name,
@@ -88,7 +88,7 @@ export async function ensureTenantDefaultRoles(companyId: string) {
   const freshTenantRoles = await fetchTenantRoles(companyId);
   const tenantRoleBySlug = new Map(freshTenantRoles.map((role) => [role.slug, role]));
 
-  const { data: companyProfiles, error: profilesError } = await admin
+  const { data: companyProfiles, error: profilesError } = await supabase
     .from("profiles")
     .select("id, role, role_id")
     .eq("company_id", companyId);
@@ -104,7 +104,7 @@ export async function ensureTenantDefaultRoles(companyId: string) {
       continue;
     }
 
-    const { error } = await admin
+    const { error } = await supabase
       .from("profiles")
       .update({
         role_id: mappedRole.id,
@@ -137,12 +137,12 @@ export async function listAssignableRolesForPlatformAdmin(): Promise<
 export async function createGlobalRoleForPlatformAdmin(input: RoleInput) {
   await requirePermission("roles.manage.global");
 
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const slug = await generateUniqueRoleSlug({
     companyId: null,
     baseName: input.name,
   });
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("app_roles")
     .insert({
       company_id: null,
@@ -168,9 +168,9 @@ export async function createGlobalRoleForPlatformAdmin(input: RoleInput) {
 export async function updateGlobalRoleForPlatformAdmin(input: UpdateRoleInput) {
   await requirePermission("roles.manage.global");
 
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
 
-  const { data: currentRole, error: currentError } = await admin
+  const { data: currentRole, error: currentError } = await supabase
     .from("app_roles")
     .select("id, is_system")
     .eq("id", input.role_id)
@@ -185,7 +185,7 @@ export async function updateGlobalRoleForPlatformAdmin(input: UpdateRoleInput) {
     throw new Error("System roles cannot be edited from this screen.");
   }
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("app_roles")
     .update({
       name: input.name,
@@ -229,12 +229,12 @@ export async function createCompanyRoleForCompanyAdmin(input: RoleInput) {
     throw new Error("Tenant roles can only include tenant-level permissions.");
   }
 
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const slug = await generateUniqueRoleSlug({
     companyId: currentProfile.company_id,
     baseName: input.name,
   });
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("app_roles")
     .insert({
       company_id: currentProfile.company_id,
@@ -268,8 +268,8 @@ export async function updateCompanyRoleForCompanyAdmin(input: UpdateRoleInput) {
     throw new Error("Tenant roles can only include tenant-level permissions.");
   }
 
-  const admin = createSupabaseAdminClient();
-  const { data: currentRole, error: currentError } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data: currentRole, error: currentError } = await supabase
     .from("app_roles")
     .select("id, is_system")
     .eq("id", input.role_id)
@@ -284,7 +284,7 @@ export async function updateCompanyRoleForCompanyAdmin(input: UpdateRoleInput) {
     throw new Error("System roles cannot be edited from this screen.");
   }
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("app_roles")
     .update({
       name: input.name,

@@ -2,6 +2,7 @@ import { CompanyShell } from "@/components/layout/company-shell";
 import { FlashBanner } from "@/components/ui/flash-banner";
 import { TransferDetailContent } from "@/components/panol/traspaso-detail-content";
 import { getFlashMessage } from "@/lib/flash";
+import { getTransferDisplayNumber } from "@/lib/transfer-number";
 import { requireCurrentProfile } from "@/server/auth/guards";
 import { listEmployees } from "@/services/empleados.service";
 import { listPanolLocations } from "@/services/ubicaciones.service";
@@ -41,7 +42,9 @@ export default async function TransferDetailPage({
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
               Traspasos
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Detalle de traspaso</h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+              Detalle de traspaso {getTransferDisplayNumber(transfer)}
+            </h1>
           </div>
 
           <div className="flex flex-wrap gap-3">

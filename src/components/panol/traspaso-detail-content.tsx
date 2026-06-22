@@ -1,6 +1,9 @@
 import type { Employee } from "@/types/empleados";
 import type { EmployeeTransfer } from "@/types/traspasos";
 import type { PanolLocation } from "@/types/ubicaciones";
+import { getTransferDisplayNumber } from "@/lib/transfer-number";
+import type { PdfLayoutConfig, PdfLayoutImageSourceKey } from "@/types/pdf-layouts";
+import { PdfLayoutCanvas } from "@/components/pdf-layouts/pdf-layout-canvas";
 import Image from "next/image";
 
 type TransferDetailContentProps = {
@@ -9,6 +12,8 @@ type TransferDetailContentProps = {
   locations: PanolLocation[];
   showHeader?: boolean;
   variant?: "screen" | "pdf";
+  layoutConfig?: PdfLayoutConfig | null;
+  layoutImageValues?: Partial<Record<PdfLayoutImageSourceKey, string | null>>;
 };
 
 function getEmployeeLabel(employee: Employee | null | undefined) {
@@ -84,116 +89,132 @@ export function TransferDetailContent({
   locations,
   showHeader = true,
   variant = "screen",
+  layoutConfig = null,
+  layoutImageValues = {},
 }: TransferDetailContentProps) {
   const employeeById = new Map(employees.map((employee) => [employee.id, employee]));
   const locationById = new Map(locations.map((location) => [location.id, location]));
   const equipmentItems = transfer.items.filter((item) => item.item_type === "equipment");
   const toolItems = transfer.items.filter((item) => item.item_type === "tool");
   const transferItemsCount = transfer.items.length;
-
-  if (variant === "pdf") {
-    return (
-      <section className="space-y-5 text-[13px] leading-5 text-foreground print:space-y-4">
-        {showHeader ? (
+  const pdfTitle = layoutConfig?.title ?? "Detalle de traspaso";
+  const pdfSubtitle = layoutConfig?.subtitle ?? "Formato compacto para guardar o imprimir.";
+  const transferDisplayNumber = getTransferDisplayNumber(transfer);
+  const sections = layoutConfig?.sections ?? {
+    header: true,
+    summary: true,
+    items: true,
+    signature: true,
+    metadata: true,
+  };
+  const sectionOrder = layoutConfig?.section_order ?? ["header", "summary", "items", "signature", "metadata"];
+  const labels = layoutConfig?.field_labels ?? {};
+  const runtime = {
+    fieldValues: {
+      origin: getEndpointLabel(transfer, "origin", employeeById, locationById),
+      destination: getEndpointLabel(transfer, "destination", employeeById, locationById),
+      date: `${transfer.transfer_date} ${transfer.transfer_time}`,
+      registered_by: getUserLabel(transfer.created_by_user),
+      transfer_number: String(transfer.transfer_number),
+      transfer_id: transfer.id,
+      items_total: String(transferItemsCount),
+      equipment_count: String(equipmentItems.length),
+      tool_count: String(toolItems.reduce((sum, item) => sum + item.quantity, 0)),
+      signed_by: getUserLabel(transfer.signed_by_user),
+    },
+    imageValues: layoutImageValues,
+    items: transfer.items.map((item) => ({
+      code:
+        item.item_type === "equipment"
+          ? item.equipment?.codigo ?? "Equipo"
+          : item.tool?.codigo ?? "Herramienta",
+      description:
+        item.item_type === "equipment"
+          ? item.equipment?.descripcion ?? "Sin descripción"
+          : item.tool?.descripcion ?? "Sin descripción",
+      quantity: item.quantity,
+    })),
+    signatureData: transfer.signature_data,
+  };
+  const renderSection = (sectionKey: (typeof sectionOrder)[number]) => {
+    switch (sectionKey) {
+      case "header":
+        return showHeader && layoutConfig?.show_header !== false && sections.header ? (
           <header className="border-b border-line pb-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-accent">
               Vista imprimible
             </p>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight">Traspaso</h1>
-            <p className="mt-1 text-sm text-muted">Formato compacto para guardar o imprimir.</p>
+            <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+              {pdfTitle} {transferDisplayNumber}
+            </h1>
+            <p className="mt-1 text-sm text-muted">{pdfSubtitle}</p>
           </header>
-        ) : null}
-
-        <section className="rounded-2xl border border-line bg-white p-4 print:rounded-none print:border-0 print:p-0">
-          <div className="grid gap-4 md:grid-cols-2">
-            <DetailField
-              label="Origen"
-              value={getEndpointLabel(transfer, "origin", employeeById, locationById)}
-              variant="pdf"
-            />
-            <DetailField
-              label="Destino"
-              value={getEndpointLabel(transfer, "destination", employeeById, locationById)}
-              variant="pdf"
-            />
-            <DetailField
-              label="Fecha"
-              value={`${transfer.transfer_date} ${transfer.transfer_time}`}
-              variant="pdf"
-            />
-            <DetailField
-              label="Registrado por"
-              value={getUserLabel(transfer.created_by_user)}
-              variant="pdf"
-            />
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-line bg-white p-4 print:rounded-none print:border-0 print:p-0">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
-              Resumen
-            </h2>
-            <p className="text-xs text-muted">{transferItemsCount} item{transferItemsCount === 1 ? "" : "s"}</p>
-          </div>
-
-          <div className="mt-3 grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl border border-line/80 bg-panel/20 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
-                Equipos
-              </p>
-              <p className="mt-1 text-lg font-semibold">{equipmentItems.length}</p>
+        ) : null;
+      case "summary":
+        return sections.summary ? (
+          <section className="rounded-2xl border border-line bg-white p-4 print:rounded-none print:border-0 print:p-0">
+            <div className="grid gap-4 md:grid-cols-2">
+              <DetailField
+                label={labels.origin ?? "Origen"}
+                value={getEndpointLabel(transfer, "origin", employeeById, locationById)}
+                variant="pdf"
+              />
+              <DetailField
+                label={labels.destination ?? "Destino"}
+                value={getEndpointLabel(transfer, "destination", employeeById, locationById)}
+                variant="pdf"
+              />
+              <DetailField
+                label={labels.date ?? "Fecha"}
+                value={`${transfer.transfer_date} ${transfer.transfer_time}`}
+                variant="pdf"
+              />
+              <DetailField
+                label={labels.registered_by ?? "Registrado por"}
+                value={getUserLabel(transfer.created_by_user)}
+                variant="pdf"
+              />
             </div>
-            <div className="rounded-xl border border-line/80 bg-panel/20 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
-                Herramientas
-              </p>
-              <p className="mt-1 text-lg font-semibold">
-                {toolItems.reduce((sum, item) => sum + item.quantity, 0)}
+          </section>
+        ) : null;
+      case "items":
+        return sections.items ? (
+          <section className="rounded-2xl border border-line bg-white p-4 print:rounded-none print:border-0 print:p-0">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
+                Resumen
+              </h2>
+              <p className="text-xs text-muted">
+                {transferItemsCount} item{transferItemsCount === 1 ? "" : "s"}
               </p>
             </div>
-            <div className="rounded-xl border border-line/80 bg-panel/20 p-3">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
-                Firmado por
-              </p>
-              <p className="mt-1 text-sm font-medium">{getUserLabel(transfer.signed_by_user)}</p>
-            </div>
-          </div>
-        </section>
 
-        <section className="rounded-2xl border border-line bg-white p-4 print:rounded-none print:border-0 print:p-0">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
-              Detalle de ítems
-            </h2>
-          </div>
-
-          <div className="mt-3 divide-y divide-line border-y border-line">
-            {transfer.items.map((item) => (
-              <div key={item.id} className="grid gap-2 py-3 md:grid-cols-[1fr_auto] md:items-start">
-                <div className="min-w-0">
-                  <p className="font-semibold text-foreground">
-                    {item.item_type === "equipment"
-                      ? item.equipment?.codigo ?? "Equipo"
-                      : item.tool?.codigo ?? "Herramienta"}
-                  </p>
-                  <p className="text-sm text-muted">
-                    {item.item_type === "equipment"
-                      ? item.equipment?.descripcion ?? "Sin descripción"
-                      : item.tool?.descripcion ?? "Sin descripción"}
-                  </p>
-                </div>
-                <div className="md:text-right">
-                  <span className="inline-flex rounded-full border border-line px-3 py-1 text-xs font-semibold">
-                    x{item.quantity}
-                  </span>
-                </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <div className="rounded-xl border border-line/80 bg-panel/20 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
+                  Equipos
+                </p>
+                <p className="mt-1 text-lg font-semibold">{equipmentItems.length}</p>
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
+              <div className="rounded-xl border border-line/80 bg-panel/20 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
+                  Herramientas
+                </p>
+                <p className="mt-1 text-lg font-semibold">
+                  {toolItems.reduce((sum, item) => sum + item.quantity, 0)}
+                </p>
+              </div>
+              <div className="rounded-xl border border-line/80 bg-panel/20 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
+                  Firmado por
+                </p>
+                <p className="mt-1 text-sm font-medium">{getUserLabel(transfer.signed_by_user)}</p>
+              </div>
+            </div>
+          </section>
+        ) : null;
+      case "signature":
+        return sections.signature ? (
           <div className="rounded-2xl border border-line bg-white p-4 print:rounded-none print:border-0 print:p-0">
             <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">Firma</h2>
             <div className="mt-3 rounded-xl border border-line bg-panel/10 p-3">
@@ -213,25 +234,54 @@ export function TransferDetailContent({
               )}
             </div>
           </div>
-
+        ) : null;
+      case "metadata":
+        return sections.metadata ? (
           <div className="rounded-2xl border border-line bg-white p-4 print:rounded-none print:border-0 print:p-0">
             <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">Metadatos</h2>
             <div className="mt-3 space-y-2 text-sm">
               <div className="flex items-center justify-between gap-3 border-b border-line/70 py-2">
-                <span className="text-muted">ID</span>
+                <span className="text-muted">Numero</span>
+                <span className="font-mono text-xs text-foreground">{transferDisplayNumber}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 border-b border-line/70 py-2">
+                <span className="text-muted">UUID</span>
                 <span className="font-mono text-xs text-foreground">{transfer.id}</span>
               </div>
               <div className="flex items-center justify-between gap-3 border-b border-line/70 py-2">
                 <span className="text-muted">Creado por</span>
-                <span className="font-medium text-foreground">{getUserLabel(transfer.created_by_user)}</span>
+                <span className="font-medium text-foreground">
+                  {getUserLabel(transfer.created_by_user)}
+                </span>
               </div>
               <div className="flex items-center justify-between gap-3 py-2">
                 <span className="text-muted">Firmado por</span>
-                <span className="font-medium text-foreground">{getUserLabel(transfer.signed_by_user)}</span>
+                <span className="font-medium text-foreground">
+                  {getUserLabel(transfer.signed_by_user)}
+                </span>
               </div>
             </div>
           </div>
-        </section>
+        ) : null;
+    }
+  };
+
+  if (variant === "pdf" && layoutConfig?.canvas) {
+    return (
+      <PdfLayoutCanvas
+        className="text-[13px] leading-5 text-foreground"
+        layoutConfig={layoutConfig}
+        runtime={runtime}
+      />
+    );
+  }
+
+  if (variant === "pdf") {
+    return (
+      <section className="space-y-5 text-[13px] leading-5 text-foreground print:space-y-4">
+        {sectionOrder.map((sectionKey) => (
+          <div key={sectionKey}>{renderSection(sectionKey)}</div>
+        ))}
       </section>
     );
   }
@@ -294,25 +344,25 @@ export function TransferDetailContent({
 
             <div className="rounded-2xl border border-line bg-white p-4 print:rounded-xl">
               <h2 className="text-lg font-semibold tracking-tight">Resumen</h2>
-              <div className="mt-4 grid gap-2 text-sm text-muted">
-                <div className="flex items-center justify-between">
-                  <span>Equipos</span>
-                  <span className="font-semibold text-foreground">{equipmentItems.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Herramientas</span>
-                  <span className="font-semibold text-foreground">
-                    {toolItems.reduce((sum, item) => sum + item.quantity, 0)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Firmado por</span>
-                  <span className="font-semibold text-foreground">
-                    {getUserLabel(transfer.signed_by_user)}
-                  </span>
-                </div>
+            <div className="mt-4 grid gap-2 text-sm text-muted">
+              <div className="flex items-center justify-between">
+                <span>Equipos</span>
+                <span className="font-semibold text-foreground">{equipmentItems.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Herramientas</span>
+                <span className="font-semibold text-foreground">
+                  {toolItems.reduce((sum, item) => sum + item.quantity, 0)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Firmado por</span>
+                <span className="font-semibold text-foreground">
+                  {getUserLabel(transfer.signed_by_user)}
+                </span>
               </div>
             </div>
+          </div>
           </div>
 
           <aside className="space-y-4">
@@ -342,7 +392,11 @@ export function TransferDetailContent({
               <h2 className="text-lg font-semibold tracking-tight">Metadatos</h2>
               <div className="mt-4 grid gap-2 text-sm text-muted">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="shrink-0">ID</span>
+                  <span className="shrink-0">Numero</span>
+                  <span className="font-mono text-xs text-foreground">{transferDisplayNumber}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="shrink-0">UUID</span>
                   <span className="font-mono text-xs text-foreground">{transfer.id}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">

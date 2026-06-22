@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireCompanyAdmin, requireCurrentProfile } from "@/server/auth/guards";
 import type { PanolLocation, LocationUserSummary } from "@/types/ubicaciones";
 
@@ -37,8 +37,8 @@ async function getCurrentCompanyIdForCurrentCompanyAdmin() {
 }
 
 async function listLocationUsersByCompanyId(companyId: string) {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("profiles")
     .select("id, full_name, email, role, is_active")
     .eq("company_id", companyId)
@@ -64,10 +64,10 @@ async function listLocationUsersByCompanyId(companyId: string) {
 
 export async function listPanolLocationsForCurrentCompanyAdmin(): Promise<PanolLocation[]> {
   const companyId = await getCurrentCompanyIdForCurrentCompanyProfile();
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
 
   const [locationsResult, usersById] = await Promise.all([
-    admin
+    supabase
       .from("panol_locations")
       .select("*")
       .eq("company_id", companyId)
@@ -107,7 +107,7 @@ export async function createPanolLocationForCurrentCompanyAdmin(input: {
 }) {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
   const name = normalizeLocationName(input.nombre);
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
 
   if (!name) {
     throw new Error("Location name is required.");
@@ -115,7 +115,7 @@ export async function createPanolLocationForCurrentCompanyAdmin(input: {
 
   if (isPanolLocationName(name)) {
     const defaultLocation = await getDefaultPanolLocationForCurrentCompanyAdmin();
-    const { data, error } = await admin
+    const { data, error } = await supabase
       .from("panol_locations")
       .update({
         responsible_user_id: input.responsible_user_id,
@@ -132,7 +132,7 @@ export async function createPanolLocationForCurrentCompanyAdmin(input: {
     return data as PanolLocation;
   }
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("panol_locations")
     .insert({
       company_id: companyId,
@@ -157,9 +157,9 @@ export async function updatePanolLocationForCurrentCompanyAdmin(input: {
 }) {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
   const name = normalizeLocationName(input.nombre);
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
 
-  const { data: currentLocation, error: fetchError } = await admin
+  const { data: currentLocation, error: fetchError } = await supabase
     .from("panol_locations")
     .select("id, is_default")
     .eq("id", input.id)
@@ -178,7 +178,7 @@ export async function updatePanolLocationForCurrentCompanyAdmin(input: {
     payload.nombre = name;
   }
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("panol_locations")
     .update(payload as never)
     .eq("id", input.id)

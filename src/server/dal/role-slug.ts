@@ -1,4 +1,4 @@
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slug";
 
 type RoleSlugScope = {
@@ -10,10 +10,10 @@ export async function generateUniqueRoleSlug({
   companyId,
   baseName,
 }: RoleSlugScope) {
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const baseSlug = slugify(baseName) || "rol";
 
-  let query = admin.from("app_roles").select("slug");
+  let query = supabase.from("app_roles").select("slug");
 
   if (companyId === null) {
     query = query.is("company_id", null);

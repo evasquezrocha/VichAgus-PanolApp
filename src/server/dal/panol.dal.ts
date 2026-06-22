@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requireCompanyAdmin } from "@/server/auth/guards";
@@ -211,7 +211,7 @@ export async function listToolsForCurrentCompanyAdmin(): Promise<Tool[]> {
       ubicacion_nombre: location?.nombre ?? null,
       ubicacion_display_name: assignedAllocation?.employee_id
         ? "Asignado a Empleado"
-        : location?.nombre ?? "PAÑOL",
+        : location?.nombre ?? "Pañol",
       assigned_employee_id: assignedAllocation?.employee_id ?? null,
       assigned_employee_name: buildEmployeeName(assignedEmployee),
     } as Tool;
@@ -353,8 +353,8 @@ export async function getToolDetailForCurrentCompanyAdmin(toolId: string): Promi
       ...(tool as Tool),
       ubicacion_nombre: locationById.get(tool.ubicacion_id)?.nombre ?? null,
       ubicacion_display_name: tool.ubicacion_id
-        ? locationById.get(tool.ubicacion_id)?.nombre ?? "PAÃ‘OL"
-        : "PAÃ‘OL",
+        ? locationById.get(tool.ubicacion_id)?.nombre ?? "Pañol"
+        : "Pañol",
       assigned_employee_id: null,
       assigned_employee_name: null,
       ubicacion_id: tool.ubicacion_id,

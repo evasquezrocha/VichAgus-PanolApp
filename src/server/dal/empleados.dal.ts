@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireCompanyAdmin, requireCurrentProfile } from "@/server/auth/guards";
 import type { EmployeeInput } from "@/schemas/empleados.schema";
 import type { Employee, EmployeeCompany } from "@/types/empleados";
@@ -34,8 +34,8 @@ export async function listEmployeeCompaniesForCurrentCompanyAdmin(): Promise<
 > {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
 
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("employee_companies")
     .select("*")
     .eq("company_id", companyId)
@@ -56,7 +56,6 @@ async function ensureEmployeeCompanyForCurrentCompanyAdmin(nombre: string) {
     throw new Error("Company name is required.");
   }
 
-  const admin = createSupabaseAdminClient();
   const existingCompanies = await listEmployeeCompaniesForCurrentCompanyAdmin();
   const existing = existingCompanies.find(
     (item) => item.nombre.trim().toLowerCase() === normalized.toLowerCase(),
@@ -66,7 +65,8 @@ async function ensureEmployeeCompanyForCurrentCompanyAdmin(nombre: string) {
     return existing;
   }
 
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("employee_companies")
     .insert({
       company_id: companyId,
@@ -94,15 +94,16 @@ async function ensureEmployeeCompanyForCurrentCompanyAdmin(nombre: string) {
 async function ensureEmployeeCanBeDeactivated(
   employeeId: string,
   companyId: string,
-  admin = createSupabaseAdminClient(),
+  supabase?: Awaited<ReturnType<typeof createServerSupabaseClient>>,
 ) {
+  const client = supabase ?? (await createServerSupabaseClient());
   const [equipmentResult, toolResult] = await Promise.all([
-    admin
+    client
       .from("employee_equipment_assignments")
       .select("id")
       .eq("company_id", companyId)
       .eq("employee_id", employeeId),
-    admin
+    client
       .from("employee_tool_allocations")
       .select("quantity")
       .eq("company_id", companyId)
@@ -130,8 +131,8 @@ async function ensureEmployeeCanBeDeactivated(
 export async function listEmployeesForCurrentCompanyAdmin(): Promise<Employee[]> {
   const companyId = await getCurrentCompanyIdForCurrentProfile();
 
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("employees")
     .select("*")
     .eq("company_id", companyId)
@@ -149,8 +150,8 @@ export async function createEmployeeForCurrentCompanyAdmin(input: EmployeeInput)
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
   const employeeCompany = await ensureEmployeeCompanyForCurrentCompanyAdmin(input.empresa);
 
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("employees")
     .insert({
       company_id: companyId,
@@ -178,8 +179,8 @@ export async function updateEmployeeForCurrentCompanyAdmin(
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
   const employeeCompany = await ensureEmployeeCompanyForCurrentCompanyAdmin(input.empresa);
 
-  const admin = createSupabaseAdminClient();
-  const { data: currentEmployee, error: currentEmployeeError } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data: currentEmployee, error: currentEmployeeError } = await supabase
     .from("employees")
     .select("id, is_active")
     .eq("id", input.id)
@@ -191,10 +192,10 @@ export async function updateEmployeeForCurrentCompanyAdmin(
   }
 
   if (currentEmployee.is_active && !input.is_active) {
-    await ensureEmployeeCanBeDeactivated(input.id, companyId, admin);
+    await ensureEmployeeCanBeDeactivated(input.id, companyId, supabase);
   }
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("employees")
     .update({
       employee_company_id: employeeCompany.id,
@@ -220,9 +221,9 @@ export async function updateEmployeeForCurrentCompanyAdmin(
 export async function deleteEmployeeForCurrentCompanyAdmin(id: string) {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
 
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const [employeeTransfersResult] = await Promise.all([
-    admin
+    supabase
       .from("employee_transfers")
       .select("id")
       .eq("company_id", companyId)
@@ -237,7 +238,7 @@ export async function deleteEmployeeForCurrentCompanyAdmin(id: string) {
     throw new Error("No se puede eliminar un empleado que participa en traspasos.");
   }
 
-  const { error } = await admin
+  const { error } = await supabase
     .from("employees")
     .delete()
     .eq("id", id)

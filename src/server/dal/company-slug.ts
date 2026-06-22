@@ -1,11 +1,11 @@
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/slug";
 
 export async function generateUniqueCompanySlug(baseName: string) {
-  const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const baseSlug = slugify(baseName) || "empresa";
 
-  const { data, error } = await admin.from("companies").select("slug");
+  const { data, error } = await supabase.from("companies").select("slug");
 
   if (error) {
     throw new Error(error.message);

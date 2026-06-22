@@ -17,6 +17,7 @@ import type {
   ToolGroup,
 } from "@/types/panol";
 import type { PanolLocation } from "@/types/ubicaciones";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
@@ -840,10 +841,13 @@ export function ToolsManager({
                             }}
                             type="button"
                           >
-                            <img
+                            <Image
                               alt={tool.descripcion}
                               className="h-8 w-8 rounded-lg border border-line object-cover"
+                              height={32}
                               src={tool.image_url}
+                              unoptimized
+                              width={32}
                             />
                             <span className="whitespace-nowrap text-[11px]">Dropbox</span>
                           </button>
@@ -956,10 +960,13 @@ export function ToolsManager({
                     Imagen actual
                   </p>
                   <div className="mt-3 flex items-center gap-3">
-                    <img
+                    <Image
                       alt={dialogTool.descripcion}
                       className="h-16 w-16 rounded-xl border border-line object-cover"
+                      height={64}
                       src={dialogTool.image_url}
+                      unoptimized
+                      width={64}
                     />
                     <div className="text-sm text-muted">
                       Si subes una nueva imagen, reemplazara la actual.
@@ -1029,10 +1036,13 @@ export function ToolsManager({
                 </div>
 
                 <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-line bg-panel">
-                  <img
+                  <Image
                     alt={imagePreviewTool.descripcion}
                     className="max-h-[70vh] w-full object-contain"
+                    height={1200}
                     src={imagePreviewTool.image_url ?? ""}
+                    unoptimized
+                    width={1600}
                   />
                 </div>
               </div>

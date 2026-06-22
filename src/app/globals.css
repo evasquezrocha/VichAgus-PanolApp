@@ -33,6 +33,59 @@ body {
   min-height: 100vh;
 }
 
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
+    min-height: auto;
+  }
+
+  .print-document,
+  .print-document * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .print-document * {
+    background-image: none !important;
+  }
+
+  .print-document .border,
+  .print-document .border-b,
+  .print-document .border-t,
+  .print-document .border-l,
+  .print-document .border-r {
+    border-color: #000000 !important;
+  }
+
+  .print-document .rounded-2xl,
+  .print-document .rounded-xl,
+  .print-document .rounded-\[1\.75rem\],
+  .print-document .rounded-\[2rem\] {
+    border-radius: 0 !important;
+  }
+
+  .print-document .bg-white,
+  .print-document .bg-panel,
+  .print-document .bg-panel\/10,
+  .print-document .bg-panel\/20,
+  .print-document .bg-panel\/30,
+  .print-document .bg-panel\/40,
+  .print-document .bg-transparent {
+    background-color: transparent !important;
+  }
+}
+
 .company-popup-surface {
   background-color: var(--company-popup-background);
   color: var(--company-popup-foreground);

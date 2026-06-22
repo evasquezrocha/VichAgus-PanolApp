@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requireCompanyAdmin } from "@/server/auth/guards";
@@ -74,10 +74,10 @@ function buildEndpointLabel(
 
   const location = endpoint.location_id ? locationById.get(endpoint.location_id) : null;
   if (!location) {
-    return "Ubicación: PAÃ‘OL";
+    return "Ubicación: Pañol";
   }
 
-  return `Ubicación: ${location.is_default ? "PAÃ‘OL" : location.nombre}`;
+  return `Ubicación: ${location.is_default ? "Pañol" : location.nombre}`;
 }
 
 export async function getCurrentCompanySlugForCurrentCompanyAdmin() {
@@ -210,7 +210,7 @@ export async function listEquipmentsForCurrentCompanyAdmin(): Promise<Equipment[
       ubicacion_nombre: location?.nombre ?? null,
       ubicacion_display_name: assignment?.employee_id
         ? "Asignado a Empleado"
-        : location?.nombre ?? "PAÑOL",
+        : location?.nombre ?? "Pañol",
       assigned_employee_id: assignment?.employee_id ?? null,
       assigned_employee_name: buildEmployeeName(assignedEmployee),
     };
@@ -375,14 +375,14 @@ export async function getEquipmentDetailForCurrentCompanyAdmin(
       ubicacion_nombre: location?.nombre ?? null,
       ubicacion_display_name: assignment?.employee_id
         ? "Asignado a Empleado"
-        : location?.nombre ?? "PAÃ‘OL",
+        : location?.nombre ?? "Pañol",
       assigned_employee_id: assignment?.employee_id ?? null,
       assigned_employee_name: buildEmployeeName(assignedEmployee),
     },
     group: groupById.get(equipment.tool_group_id) ?? null,
     current_holder_label: assignment?.employee_id
       ? `Empleado: ${buildEmployeeName(assignedEmployee) ?? "Sin asignar"}`
-      : `Ubicación: ${location?.is_default ? "PAÃ‘OL" : location?.nombre ?? "Sin ubicación"}`,
+      : `Ubicación: ${location?.is_default ? "Pañol" : location?.nombre ?? "Sin ubicación"}`,
     current_holder_type: assignment?.employee_id ? "employee" : "location",
     history,
   };

@@ -53,6 +53,7 @@ export type EmployeeTransferItem = {
 export type EmployeeTransfer = {
   id: string;
   company_id: string;
+  transfer_number: number;
   origin_type: TransferEndpointType;
   origin_employee_id: string | null;
   origin_location_id: string | null;

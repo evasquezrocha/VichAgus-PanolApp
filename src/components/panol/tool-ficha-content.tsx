@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -12,10 +12,10 @@ type ToolFichaContentProps = {
 
 function getLocationLabel(detail: ToolDetail) {
   if (!detail.location) {
-    return "PAÃ‘OL";
+    return "Pañol";
   }
 
-  return detail.location.is_default ? "PAÃ‘OL" : detail.location.nombre;
+  return detail.location.is_default ? "Pañol" : detail.location.nombre;
 }
 
 function getEmployeeLabel(employeeName: string | null) {

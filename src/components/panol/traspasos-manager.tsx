@@ -1,4 +1,5 @@
 import { TraspasosTransferBuilder } from "@/components/panol/traspasos-transfer-builder";
+import { getTransferDisplayNumber } from "@/lib/transfer-number";
 import type { Employee } from "@/types/empleados";
 import type { EmployeeTransfer, TransferEquipmentRow, TransferToolRow } from "@/types/traspasos";
 import type { PanolLocation } from "@/types/ubicaciones";
@@ -116,6 +117,8 @@ function getTransferSearchBlob(
       getUserLabel(transfer.created_by_user),
       getUserLabel(transfer.signed_by_user),
       itemLabels,
+      getTransferDisplayNumber(transfer),
+      String(transfer.transfer_number),
       transfer.id,
     ]
       .join(" ")
@@ -211,6 +214,9 @@ export function TraspasosManager({
                 >
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+                        {getTransferDisplayNumber(transfer)}
+                      </p>
                       <p className="text-sm font-semibold text-foreground">
                         {getTransferEndpointLabel(transfer, "origin", employeeById, locationById)}
                         {" -> "}
@@ -234,6 +240,9 @@ export function TraspasosManager({
                         <span className="font-medium text-foreground">
                           {transfer.signature_data ? "Capturada" : "Sin firma"}
                         </span>
+                      </p>
+                      <p className="text-xs text-muted">
+                        UUID: <span className="font-mono">{transfer.id}</span>
                       </p>
                     </div>
 

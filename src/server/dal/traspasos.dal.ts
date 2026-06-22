@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requireCurrentProfile } from "@/server/auth/guards";
 import { hasPermission } from "@/server/auth/permissions";
 import type { CurrentProfile } from "@/types/auth";
@@ -63,7 +63,7 @@ export async function listTransferEquipmentsForCurrentCompanyAdmin(): Promise<
   TransferEquipmentRow[]
 > {
   const { companyId } = await getTransferContext();
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
 
   const [equipmentsResult, assignmentsResult, employeesResult] = await Promise.all([
     admin.from("equipments").select("*").eq("company_id", companyId).order("codigo", { ascending: true }),
@@ -120,7 +120,7 @@ export async function listTransferEquipmentsForCurrentCompanyAdmin(): Promise<
 
 export async function listTransferToolsForCurrentCompanyAdmin(): Promise<TransferToolRow[]> {
   const { companyId } = await getTransferContext();
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
 
   const [toolsResult, allocationsResult] = await Promise.all([
     admin.from("tools").select("*").eq("company_id", companyId).order("codigo", { ascending: true }),
@@ -185,7 +185,7 @@ export async function listTransferToolsForCurrentCompanyAdmin(): Promise<Transfe
 }
 
 async function listLocationResponsibilityMap(companyId: string) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
   const { data, error } = await admin
     .from("panol_locations")
     .select("id, responsible_user_id")
@@ -201,7 +201,7 @@ async function listLocationResponsibilityMap(companyId: string) {
 }
 
 async function listLocationUsersById(companyId: string) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
   const { data, error } = await admin
     .from("profiles")
     .select("id, full_name, email, role")
@@ -225,11 +225,46 @@ async function listLocationUsersById(companyId: string) {
   );
 }
 
+async function buildTransferNumberMap(companyId: string) {
+  const admin = await createServerSupabaseClient();
+  const { data, error } = await admin
+    .from("employee_transfers")
+    .select("id, transfer_number, transfer_date, transfer_time, created_at")
+    .eq("company_id", companyId)
+    .order("transfer_date", { ascending: true })
+    .order("transfer_time", { ascending: true })
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const transferNumberById = new Map<string, number>();
+  let nextTransferNumber = 1;
+
+  for (const transfer of data ?? []) {
+    const parsedTransferNumber =
+      transfer.transfer_number === null || transfer.transfer_number === undefined
+        ? null
+        : Number(transfer.transfer_number);
+    const transferNumber =
+      parsedTransferNumber !== null && Number.isFinite(parsedTransferNumber)
+        ? parsedTransferNumber
+        : nextTransferNumber;
+
+    transferNumberById.set(transfer.id, transferNumber);
+    nextTransferNumber = Math.max(nextTransferNumber, transferNumber + 1);
+  }
+
+  return transferNumberById;
+}
+
 async function ensureTransferItemsAreActive(
   companyId: string,
   items: TransferItemInput[],
 ) {
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
   const equipmentIds = items
     .filter((item): item is Extract<TransferItemInput, { item_type: "equipment" }> => item.item_type === "equipment")
     .map((item) => item.equipment_id);
@@ -282,7 +317,7 @@ export async function listEmployeeTransfersForCurrentCompanyAdmin(): Promise<
   EmployeeTransfer[]
 > {
   const { companyId } = await getTransferContext();
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
 
   const transfersResult = await admin
     .from("employee_transfers")
@@ -294,6 +329,8 @@ export async function listEmployeeTransfersForCurrentCompanyAdmin(): Promise<
   if (transfersResult.error) {
     throw new Error(transfersResult.error.message);
   }
+
+  const transferNumberById = await buildTransferNumberMap(companyId);
 
   const transferIds = (transfersResult.data ?? []).map((transfer) => transfer.id);
 
@@ -376,6 +413,7 @@ export async function listEmployeeTransfersForCurrentCompanyAdmin(): Promise<
 
   return (transfersResult.data ?? []).map((transfer) => ({
     ...(transfer as EmployeeTransfer),
+    transfer_number: transferNumberById.get(transfer.id) ?? transfer.transfer_number ?? 0,
     origin_employee: transfer.origin_employee_id
       ? employeeById.get(transfer.origin_employee_id) ?? null
       : null,
@@ -402,7 +440,7 @@ export async function getEmployeeTransferForCurrentCompanyAdmin(
   transferId: string,
 ): Promise<EmployeeTransfer | null> {
   const { companyId } = await getTransferContext();
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
 
   const { data: transfer, error } = await admin
     .from("employee_transfers")
@@ -418,6 +456,8 @@ export async function getEmployeeTransferForCurrentCompanyAdmin(
 
     return null;
   }
+
+  const transferNumberById = await buildTransferNumberMap(companyId);
 
   const [itemsResult, employeesResult, locationsResult, equipmentsResult, toolsResult, usersById] =
     await Promise.all([
@@ -484,6 +524,7 @@ export async function getEmployeeTransferForCurrentCompanyAdmin(
 
   return {
     ...(transfer as EmployeeTransfer),
+    transfer_number: transferNumberById.get(transfer.id) ?? transfer.transfer_number ?? 0,
     origin_employee: transfer.origin_employee_id
       ? employeeById.get(transfer.origin_employee_id) ?? null
       : null,
@@ -522,7 +563,7 @@ export async function createEmployeeTransferForCurrentCompanyAdmin(input: {
   items: TransferItemInput[];
 }) {
   const { profile, companyId, isAdmin } = await getTransferContext();
-  const admin = createSupabaseAdminClient();
+  const admin = await createServerSupabaseClient();
 
   await ensureTransferItemsAreActive(companyId, input.items);
 

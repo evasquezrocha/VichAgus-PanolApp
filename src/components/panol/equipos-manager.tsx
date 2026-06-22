@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   createEquipmentAction,
@@ -17,6 +17,7 @@ import type {
   EquipmentGroup,
 } from "@/types/equipos";
 import type { PanolLocation } from "@/types/ubicaciones";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
@@ -131,7 +132,7 @@ function getLocationLabel(
     return `Empleado: ${equipment.assigned_employee_name ?? "Sin asignar"}`;
   }
 
-  return locationsById.get(equipment.ubicacion_id)?.nombre ?? equipment.ubicacion_nombre ?? "PAÑOL";
+  return locationsById.get(equipment.ubicacion_id)?.nombre ?? equipment.ubicacion_nombre ?? "Pañol";
 }
 
 function getCurrentHolderLabel(
@@ -145,10 +146,10 @@ function getCurrentHolderLabel(
   const location = locationsById.get(equipment.ubicacion_id);
 
   if (location?.is_default) {
-    return "Ubicación: PAÃ‘OL";
+    return "Ubicación: Pañol";
   }
 
-  return `Ubicación: ${location?.nombre ?? equipment.ubicacion_nombre ?? "PAÃ‘OL"}`;
+  return `Ubicación: ${location?.nombre ?? equipment.ubicacion_nombre ?? "Pañol"}`;
 }
 
 function EquipmentFormFields({
@@ -834,10 +835,13 @@ export function EquipmentsManager({
                             }}
                             type="button"
                           >
-                            <img
+                            <Image
                               alt={tool.descripcion}
                               className="h-8 w-8 rounded-lg border border-line object-cover"
+                              height={32}
                               src={tool.image_url}
+                              unoptimized
+                              width={32}
                             />
                             <span className="whitespace-nowrap text-[11px]">Dropbox</span>
                           </button>
@@ -950,10 +954,13 @@ export function EquipmentsManager({
                     Imagen actual
                   </p>
                   <div className="mt-3 flex items-center gap-3">
-                    <img
+                    <Image
                       alt={dialogEquipment.descripcion}
                       className="h-16 w-16 rounded-xl border border-line object-cover"
+                      height={64}
                       src={dialogEquipment.image_url}
+                      unoptimized
+                      width={64}
                     />
                     <div className="text-sm text-muted">
                       Si subes una nueva imagen, reemplazara la actual.
@@ -1023,10 +1030,13 @@ export function EquipmentsManager({
                 </div>
 
                 <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-line bg-panel">
-                  <img
+                  <Image
                     alt={imagePreviewEquipment.descripcion}
                     className="max-h-[70vh] w-full object-contain"
+                    height={1200}
                     src={imagePreviewEquipment.image_url ?? ""}
+                    unoptimized
+                    width={1600}
                   />
                 </div>
               </div>

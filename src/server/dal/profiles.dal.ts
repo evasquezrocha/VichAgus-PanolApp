@@ -102,8 +102,8 @@ function canCompanyAdminAssignRole(role: AppRoleDefinition) {
 }
 
 async function getRoleForPlatformAssignment(roleId: string) {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
     .from("app_roles")
     .select(
       "id, company_id, name, slug, description, permissions, is_system, is_active, created_at, updated_at",
@@ -191,13 +191,14 @@ export async function createCompanyUserForPlatformAdmin(
   await requirePermission("users.manage.global");
 
   const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const role = await resolveRoleForPlatformUser(input.company_id, input.role_id);
 
   if (role.slug === "super_admin" && input.company_id !== null) {
     throw new Error("super_admin cannot be assigned to a company.");
   }
 
-  const { data: company, error: companyError } = await admin
+  const { data: company, error: companyError } = await supabase
     .from("companies")
     .select("id")
     .eq("id", input.company_id)
@@ -228,7 +229,7 @@ export async function createCompanyUserForPlatformAdmin(
     throw new Error("Supabase did not return a created user.");
   }
 
-  const { data: profile, error: profileError } = await admin
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .insert({
       id: user.id,
@@ -263,9 +264,10 @@ export async function updateUserTemporaryPasswordForPlatformAdmin(
     );
   }
 
+  const supabase = await createServerSupabaseClient();
   const admin = createSupabaseAdminClient();
 
-  const { data: targetProfile, error: targetError } = await admin
+  const { data: targetProfile, error: targetError } = await supabase
     .from("profiles")
     .select("id")
     .eq("id", input.user_id)
@@ -330,6 +332,7 @@ export async function createCompanyUserForCompanyAdmin(
   }
 
   const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const role = await getRoleForCompanyAssignment(input.role_id);
 
   const { data: createdUser, error: createUserError } =
@@ -352,7 +355,7 @@ export async function createCompanyUserForCompanyAdmin(
     throw new Error("Supabase did not return a created user.");
   }
 
-  const { data: profile, error: profileError } = await admin
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .insert({
       id: user.id,
@@ -386,7 +389,8 @@ export async function updateManagedUserForPlatformAdmin(
   }
 
   const admin = createSupabaseAdminClient();
-  const { data: targetProfile, error: targetError } = await admin
+  const supabase = await createServerSupabaseClient();
+  const { data: targetProfile, error: targetError } = await supabase
     .from("profiles")
     .select("id, role, company_id, full_name, email")
     .eq("id", input.user_id)
@@ -420,7 +424,7 @@ export async function updateManagedUserForPlatformAdmin(
     full_name: nextFullName,
   });
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("profiles")
     .update({
       role_id: role.id,
@@ -456,9 +460,10 @@ export async function updateManagedUserForCompanyAdmin(
   }
 
   const admin = createSupabaseAdminClient();
+  const supabase = await createServerSupabaseClient();
   const role = await getRoleForCompanyAssignment(input.role_id);
 
-  const { data: targetProfile, error: targetError } = await admin
+  const { data: targetProfile, error: targetError } = await supabase
     .from("profiles")
     .select("id, company_id, role, full_name, email")
     .eq("id", input.user_id)
@@ -482,7 +487,7 @@ export async function updateManagedUserForCompanyAdmin(
     full_name: nextFullName,
   });
 
-  const { data, error } = await admin
+  const { data, error } = await supabase
     .from("profiles")
     .update({
       role_id: role.id,

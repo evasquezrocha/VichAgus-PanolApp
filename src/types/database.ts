@@ -110,6 +110,53 @@ export type Database = {
           },
         ];
       };
+      pdf_layout_templates: {
+        Row: {
+          id: string;
+          company_id: string;
+          template_key: string;
+          name: string;
+          description: string | null;
+          target_path: string;
+          layout_config: Json;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          template_key: string;
+          name: string;
+          description?: string | null;
+          target_path: string;
+          layout_config?: Json;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          template_key?: string;
+          name?: string;
+          description?: string | null;
+          target_path?: string;
+          layout_config?: Json;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pdf_layout_templates_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           id: string;
@@ -361,6 +408,7 @@ export type Database = {
         Row: {
           id: string;
           company_id: string;
+          transfer_number: number;
           origin_type: string;
           origin_employee_id: string | null;
           origin_location_id: string | null;
@@ -378,6 +426,7 @@ export type Database = {
         Insert: {
           id?: string;
           company_id: string;
+          transfer_number?: number;
           origin_type: string;
           origin_employee_id?: string | null;
           origin_location_id?: string | null;
@@ -395,6 +444,7 @@ export type Database = {
         Update: {
           id?: string;
           company_id?: string;
+          transfer_number?: number;
           origin_type?: string;
           origin_employee_id?: string | null;
           origin_location_id?: string | null;
