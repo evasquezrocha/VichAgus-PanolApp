@@ -15,7 +15,8 @@ export type PdfLayoutFieldKey =
   | "items_total"
   | "equipment_count"
   | "tool_count"
-  | "signed_by";
+  | "signed_by"
+  | "observations";
 
 export type PdfLayoutImageSourceKey = "company_logo_url";
 
@@ -144,7 +145,9 @@ export type PdfLayoutConfig = {
   show_header: boolean;
   section_order: PdfLayoutSectionKey[];
   sections: Record<PdfLayoutSectionKey, boolean>;
-  field_labels: Partial<Record<"origin" | "destination" | "date" | "registered_by", string>>;
+  field_labels: Partial<
+    Record<"origin" | "destination" | "date" | "registered_by" | "observations", string>
+  >;
   canvas?: PdfLayoutCanvasConfig | null;
 };
 

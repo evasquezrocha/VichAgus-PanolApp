@@ -121,6 +121,7 @@ export function TransferDetailContent({
       equipment_count: String(equipmentItems.length),
       tool_count: String(toolItems.reduce((sum, item) => sum + item.quantity, 0)),
       signed_by: getUserLabel(transfer.signed_by_user),
+      observations: transfer.observations ?? "",
     },
     imageValues: layoutImageValues,
     items: transfer.items.map((item) => ({
@@ -175,6 +176,17 @@ export function TransferDetailContent({
                 variant="pdf"
               />
             </div>
+
+            {transfer.observations?.trim() ? (
+              <div className="mt-4 rounded-2xl border border-line/70 bg-panel/20 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted">
+                  {labels.observations ?? "Observaciones"}
+                </p>
+                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
+                  {transfer.observations}
+                </p>
+              </div>
+            ) : null}
           </section>
         ) : null;
       case "items":
@@ -312,6 +324,17 @@ export function TransferDetailContent({
           <DetailField label="Fecha" value={`${transfer.transfer_date} ${transfer.transfer_time}`} />
           <DetailField label="Registrado por" value={getUserLabel(transfer.created_by_user)} />
         </div>
+
+        {transfer.observations?.trim() ? (
+          <div className="rounded-2xl border border-line bg-white p-4 print:rounded-xl">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted">
+              Observaciones
+            </h2>
+            <p className="mt-3 whitespace-pre-wrap text-sm text-foreground">
+              {transfer.observations}
+            </p>
+          </div>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] print:grid-cols-1">
           <div className="space-y-4">

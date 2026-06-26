@@ -490,6 +490,16 @@ export function TraspasosTransferBuilder({
           </label>
         </div>
 
+        <label className="block">
+          <span className="text-sm font-medium">OBSERVACIONES</span>
+          <textarea
+            className="mt-2 min-h-28 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
+            name="observations"
+            placeholder="Agrega una nota opcional para el comprobante o el PDF."
+            rows={4}
+          />
+        </label>
+
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
           <div className="space-y-6">
             <div className="rounded-2xl border border-line bg-white p-4">

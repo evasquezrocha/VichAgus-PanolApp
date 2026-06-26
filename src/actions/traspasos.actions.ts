@@ -66,6 +66,7 @@ export async function createEmployeeTransferAction(formData: FormData) {
       transfer_date: formData.get("transfer_date"),
       transfer_time: formData.get("transfer_time"),
       signature_data: formData.get("signature_data"),
+      observations: formData.get("observations"),
     });
     const items = extractTransferItems(formData);
     const origin = parseTransferEndpoint(parsed.origin_endpoint, "Origen");
@@ -81,6 +82,7 @@ export async function createEmployeeTransferAction(formData: FormData) {
       transfer_date: parsed.transfer_date,
       transfer_time: parsed.transfer_time,
       signature_data: parsed.signature_data,
+      observations: parsed.observations,
       items,
     });
   } catch (error) {

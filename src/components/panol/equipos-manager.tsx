@@ -8,7 +8,11 @@ import {
 } from "@/actions/equipos.actions";
 import { PendingButton } from "@/components/ui/pending-button";
 import { EquipoFichaContent } from "@/components/panol/equipo-ficha-content";
-import { getStatusSelectValue } from "@/lib/item-status";
+import {
+  getStatusSelectValue,
+  ITEM_STATUS_OPTIONS,
+  isKnownItemStatus,
+} from "@/lib/item-status";
 import type {
   Equipment,
   EquipmentDetail,
@@ -64,11 +68,9 @@ function TabLink({
     <Link
       href={href}
       className={[
-        "rounded-full px-5 py-3 text-sm font-semibold transition",
-        active
-          ? "bg-[#2b3a44] text-white"
-          : "border border-line bg-white text-foreground hover:bg-panel",
+        "company-tab-link rounded-full border border-line px-5 py-3 text-sm font-semibold transition",
       ].join(" ")}
+      data-active={active ? "true" : "false"}
     >
       {children}
     </Link>
@@ -240,10 +242,12 @@ function EquipmentFormFields({
           defaultValue={getStatusSelectValue(tool?.estado)}
           required
         >
-          <option value="Activo">Activo</option>
-          <option value="Inactivo">Inactivo</option>
-          {tool?.estado &&
-          !["activo", "inactivo"].includes(tool.estado.trim().toLowerCase()) ? (
+          {ITEM_STATUS_OPTIONS.map((status) => (
+            <option key={status.value} value={status.value}>
+              {status.label}
+            </option>
+          ))}
+          {tool?.estado && !isKnownItemStatus(tool.estado) ? (
             <option value={tool.estado}>{tool.estado}</option>
           ) : null}
         </select>
@@ -807,7 +811,9 @@ export function EquipmentsManager({
                         <div className="max-w-[12rem] break-words">{tool.nro_serie ?? "-"}</div>
                       </td>
                       <td className="py-2 pr-2 align-middle text-muted">
-                        <div className="max-w-[12rem] break-words">{tool.estado ?? "-"}</div>
+                        <div className="max-w-[12rem] break-words">
+                          {tool.estado ? getStatusSelectValue(tool.estado) : "-"}
+                        </div>
                       </td>
                       <td className="py-2 pr-2 align-middle text-muted">
                         {tool.marca ?? "-"}

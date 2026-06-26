@@ -116,6 +116,7 @@ function getTransferSearchBlob(
       destinationLabel,
       getUserLabel(transfer.created_by_user),
       getUserLabel(transfer.signed_by_user),
+      transfer.observations ?? "",
       itemLabels,
       getTransferDisplayNumber(transfer),
       String(transfer.transfer_number),

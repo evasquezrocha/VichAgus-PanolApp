@@ -8,6 +8,12 @@ export type CurrentProfile = Pick<
   company_name: string | null;
   company_rut: string | null;
   company_logo_url: string | null;
+  company_button_background_color: string | null;
+  company_button_text_color: string | null;
+  company_tab_background_color: string | null;
+  company_tab_text_color: string | null;
+  company_tab_active_background_color: string | null;
+  company_tab_active_text_color: string | null;
   company_popup_background_color: string | null;
   company_popup_text_color: string | null;
   company_sidebar_bg_color: string | null;

@@ -5,13 +5,19 @@ import {
   deleteEmployeeAction,
   updateEmployeeAction,
 } from "@/actions/empleados.actions";
+import { EmployeeFichaContent } from "@/components/panol/empleado-ficha-content";
 import { PendingButton } from "@/components/ui/pending-button";
-import type { Employee, EmployeeCompany } from "@/types/empleados";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { Employee, EmployeeCompany, EmployeeDetail } from "@/types/empleados";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 type EmployeesManagerProps = {
+  activeTab: "empleados" | "ficha-empleado";
   employeeCompanies: EmployeeCompany[];
   employees: Employee[];
+  selectedEmployeeDetail: EmployeeDetail | null;
+  selectedEmployeeId: string | null;
 };
 
 type EmployeeModalState =
@@ -47,6 +53,28 @@ function SortIcon({ direction }: { direction: SortDirection | null }) {
       <span className={direction === "asc" ? "text-foreground" : ""}>▲</span>
       <span className={direction === "desc" ? "text-foreground" : ""}>▼</span>
     </span>
+  );
+}
+
+function TabLink({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={[
+        "company-tab-link rounded-full border border-line px-5 py-3 text-sm font-semibold transition",
+      ].join(" ")}
+      data-active={active ? "true" : "false"}
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -139,12 +167,19 @@ function EmployeeFormFields({
   );
 }
 
-export function EmployeesManager({ employeeCompanies, employees }: EmployeesManagerProps) {
+export function EmployeesManager({
+  activeTab,
+  employeeCompanies,
+  employees,
+  selectedEmployeeDetail,
+  selectedEmployeeId,
+}: EmployeesManagerProps) {
   const [modalState, setModalState] = useState<EmployeeModalState | null>(null);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("apellidos");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -261,8 +296,32 @@ export function EmployeesManager({ employeeCompanies, employees }: EmployeesMana
     setModalState(null);
   }
 
+  function openEmployeeDetail(employeeId: string) {
+    router.push(
+      `/company/panol/empleados?tab=ficha-empleado&employeeId=${encodeURIComponent(employeeId)}`,
+    );
+  }
+
   return (
     <section className="space-y-6 rounded-[1.75rem] border border-line bg-white/60 p-5 md:p-6">
+      <div className="flex flex-wrap items-center gap-3">
+        <TabLink href="/company/panol/empleados?tab=empleados" active={activeTab === "empleados"}>
+          Listado de empleados
+        </TabLink>
+        <TabLink
+          href={
+            selectedEmployeeId
+              ? `/company/panol/empleados?tab=ficha-empleado&employeeId=${encodeURIComponent(selectedEmployeeId)}`
+              : "/company/panol/empleados?tab=ficha-empleado"
+          }
+          active={activeTab === "ficha-empleado"}
+        >
+          Ficha de empleado
+        </TabLink>
+      </div>
+
+      {activeTab === "empleados" ? (
+        <>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
@@ -361,7 +420,23 @@ export function EmployeesManager({ employeeCompanies, employees }: EmployeesMana
               const company = companyById.get(employee.employee_company_id);
 
               return (
-                <tr key={employee.id} className="border-b border-line/60 align-top">
+                <tr
+                  key={employee.id}
+                  className={[
+                    "border-b border-line/60 align-top transition",
+                    "cursor-pointer hover:bg-panel/40",
+                    selectedEmployeeId === employee.id ? "bg-accent/5" : "",
+                  ].join(" ")}
+                  onClick={() => openEmployeeDetail(employee.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openEmployeeDetail(employee.id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <td className="py-2 pr-2 align-middle font-semibold text-foreground">{employee.rut}</td>
                   <td className="py-2 pr-2 align-middle text-muted">{employee.nombres}</td>
                   <td className="py-2 pr-2 align-middle text-muted">{employee.apellidos}</td>
@@ -379,10 +454,13 @@ export function EmployeesManager({ employeeCompanies, employees }: EmployeesMana
                   <td className="py-2 pr-2 align-middle text-muted">{employee.email ?? "-"}</td>
                   <td className="py-2 pr-2 align-middle text-muted">{employee.telefono ?? "-"}</td>
                   <td className="py-2 align-middle">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" onClick={(event) => event.stopPropagation()}>
                       <button
                         className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line bg-white text-foreground transition hover:bg-panel"
-                        onClick={() => openEditModal(employee)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          openEditModal(employee);
+                        }}
                         title="Editar"
                         type="button"
                       >
@@ -390,6 +468,7 @@ export function EmployeesManager({ employeeCompanies, employees }: EmployeesMana
                       </button>
                       <form
                         action={deleteEmployeeAction}
+                        onClick={(event) => event.stopPropagation()}
                         onSubmit={(event) => {
                           if (!window.confirm("¿Eliminar este empleado?")) {
                             event.preventDefault();
@@ -422,6 +501,16 @@ export function EmployeesManager({ employeeCompanies, employees }: EmployeesMana
           </tbody>
         </table>
       </div>
+
+        </>
+      ) : null}
+
+      {activeTab === "ficha-empleado" ? (
+        <EmployeeFichaContent
+          backHref="/company/panol/empleados?tab=empleados"
+          detail={selectedEmployeeDetail}
+        />
+      ) : null}
 
       <dialog
         ref={dialogRef}

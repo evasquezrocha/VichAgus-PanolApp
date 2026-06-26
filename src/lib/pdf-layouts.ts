@@ -28,6 +28,7 @@ export const DEFAULT_PDF_LAYOUT_FIELD_LABELS = {
   destination: "Destino",
   date: "Fecha",
   registered_by: "Registrado por",
+  observations: "Observaciones",
 };
 
 export function getPdfLayoutPageDimensions(

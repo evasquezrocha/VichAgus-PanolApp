@@ -34,6 +34,7 @@ export async function createEmployeeTransfer(input: {
   transfer_date: string;
   transfer_time: string;
   signature_data: string;
+  observations: string;
   items: Array<
     | { item_type: "equipment"; equipment_id: string }
     | { item_type: "tool"; tool_id: string; quantity: number }

@@ -560,6 +560,7 @@ export async function createEmployeeTransferForCurrentCompanyAdmin(input: {
   transfer_date: string;
   transfer_time: string;
   signature_data: string;
+  observations: string;
   items: TransferItemInput[];
 }) {
   const { profile, companyId, isAdmin } = await getTransferContext();
@@ -603,6 +604,7 @@ export async function createEmployeeTransferForCurrentCompanyAdmin(input: {
     p_transfer_date: input.transfer_date,
     p_transfer_time: input.transfer_time,
     p_signature_data: input.signature_data,
+    p_observations: input.observations,
     p_items: input.items,
   });
 

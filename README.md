@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Mobile roadmap
+
+This repository keeps the current desktop web app intact and starts a separate mobile path for offline-first usage.
+
+- `src/app/api/mobile/v1/health` is the first mobile-friendly endpoint.
+- `src/app/api/mobile/v1/sync` defines the offline sync payload contract.
+- `src/schemas/mobile-sync.schema.ts` contains the shared Zod contract for queued mutations.
+
+The intended next step is a separate Expo app that consumes this API and stores pending changes locally until connectivity returns.
+
 ## Getting Started
 
 First, run the development server:

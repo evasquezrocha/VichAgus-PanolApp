@@ -3,6 +3,7 @@ import "server-only";
 import {
   createEmployeeForCurrentCompanyAdmin,
   deleteEmployeeForCurrentCompanyAdmin,
+  getEmployeeDetailForCurrentCompanyAdmin,
   listEmployeeCompaniesForCurrentCompanyAdmin,
   listEmployeesForCurrentCompanyAdmin,
   updateEmployeeForCurrentCompanyAdmin,
@@ -15,6 +16,10 @@ export async function listEmployeeCompanies() {
 
 export async function listEmployees() {
   return listEmployeesForCurrentCompanyAdmin();
+}
+
+export async function getEmployeeDetail(employeeId: string) {
+  return getEmployeeDetailForCurrentCompanyAdmin(employeeId);
 }
 
 export async function createEmployee(input: EmployeeInput) {

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/server/auth/guards";
 import type {
@@ -69,6 +70,12 @@ export async function updateCompanySettingsForCurrentCompanyAdmin(
       name: input.name,
       rut: input.rut ?? null,
       logo_url: input.logo_url ?? null,
+      button_background_color: input.button_background_color,
+      button_text_color: input.button_text_color,
+      tab_background_color: input.tab_background_color,
+      tab_text_color: input.tab_text_color,
+      tab_active_background_color: input.tab_active_background_color,
+      tab_active_text_color: input.tab_active_text_color,
       popup_background_color: input.popup_background_color,
       popup_text_color: input.popup_text_color,
       sidebar_bg_color: input.sidebar_bg_color,
@@ -103,7 +110,7 @@ export async function uploadCompanyLogoForCurrentCompanyAdmin(file: File) {
     throw new Error("Current user is not assigned to a company.");
   }
 
-  const admin = await createServerSupabaseClient();
+  const admin = createSupabaseAdminClient();
   const extension =
     file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
   const path = `${currentProfile.company_id}/${randomUUID()}.${extension}`;

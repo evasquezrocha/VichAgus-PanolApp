@@ -63,6 +63,7 @@ function buildToolUnits(
         employee_id: allocation.employee_id,
         employee_name: allocation.employee_name,
         allocation_id: allocation.id,
+        assigned_at: isAssigned ? allocation.assigned_at : null,
       });
       unitNumber += 1;
     }
@@ -74,6 +75,7 @@ function buildToolUnits(
       employee_id: null,
       employee_name: null,
       allocation_id: null,
+      assigned_at: null,
     });
     unitNumber += 1;
   }

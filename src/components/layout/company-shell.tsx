@@ -43,6 +43,15 @@ export function CompanyShell({
 
   const companyName = profile.company_name ?? "Sin empresa";
   const companyLogoUrl = profile.company_logo_url ?? null;
+  const buttonBackground =
+    profile.company_button_background_color ?? "#2b3a44";
+  const buttonTextColor = profile.company_button_text_color ?? "#ffffff";
+  const tabBackground = profile.company_tab_background_color ?? "#ffffff";
+  const tabTextColor = profile.company_tab_text_color ?? "#2b3a44";
+  const tabActiveBackground =
+    profile.company_tab_active_background_color ?? "#2b3a44";
+  const tabActiveTextColor =
+    profile.company_tab_active_text_color ?? "#ffffff";
   const popupBackground = profile.company_popup_background_color ?? "#fffdf8";
   const popupTextColor = profile.company_popup_text_color ?? "#2b3a44";
   const sidebarBackground = profile.company_sidebar_bg_color ?? "#2b3a44";
@@ -67,12 +76,19 @@ export function CompanyShell({
   return (
     <div
       className={[
-        "min-h-screen px-0 py-0 transition-[padding] duration-300",
+        "company-shell min-h-screen px-0 py-0 transition-[padding] duration-300",
         isPinned ? "lg:pl-[20.5rem]" : "lg:pl-[6.75rem]",
       ].join(" ")}
       style={
         {
           backgroundColor: platformBackground,
+          ["--company-button-background" as string]: buttonBackground,
+          ["--company-button-background-strong" as string]: `color-mix(in srgb, ${buttonBackground} 82%, black 18%)`,
+          ["--company-button-foreground" as string]: buttonTextColor,
+          ["--company-tab-background" as string]: tabBackground,
+          ["--company-tab-foreground" as string]: tabTextColor,
+          ["--company-tab-active-background" as string]: tabActiveBackground,
+          ["--company-tab-active-foreground" as string]: tabActiveTextColor,
           ["--company-popup-background" as string]: popupBackground,
           ["--company-popup-foreground" as string]: popupTextColor,
         } as CSSProperties

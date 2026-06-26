@@ -63,6 +63,16 @@ function TransferIcon() {
   );
 }
 
+function AssetsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path d="M12 3l8 4-8 4-8-4 8-4Z" />
+      <path d="M4 11l8 4 8-4" />
+      <path d="M4 15l8 4 8-4" />
+    </svg>
+  );
+}
+
 function LocationIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -164,10 +174,12 @@ export function CompanySidebar({
 }: CompanySidebarProps) {
   const pathname = usePathname();
   const [isPanolOpen, setIsPanolOpen] = useState(false);
+  const [isActivosOpen, setIsActivosOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const canViewDashboard = hasAnyPermission(permissions, ["company.access"]);
   const canViewPanol = hasAnyPermission(permissions, ["company.access"]);
+  const canViewActivos = canViewPanol;
   const canViewUsers = hasAnyPermission(permissions, [
     "company.users.read",
     "company.users.manage",
@@ -191,11 +203,15 @@ export function CompanySidebar({
     pathname === "/company/panol/empleados" ||
     pathname === "/company/panol/ubicaciones" ||
     pathname === "/company/panol/traspasos";
+  const isActivosParentActive = pathname.startsWith("/company/activos");
+  const isActivosSectionActive =
+    pathname === "/company/activos/listado-de-activos" || pathname === "/company/activos";
   const isToolsActive = pathname === "/company/panol/herramientas";
   const isEquiposActive = pathname === "/company/panol/equipos";
   const isEmpleadosActive = pathname === "/company/panol/empleados";
   const isLocationsActive = pathname === "/company/panol/ubicaciones";
   const isTraspasosActive = pathname === "/company/panol/traspasos";
+  const isActivosActive = pathname === "/company/activos/listado-de-activos";
   const isSettingsParentActive = pathname === "/company/settings";
   const isSettingsChildActive =
     pathname === "/company/settings/users" ||
@@ -204,6 +220,7 @@ export function CompanySidebar({
     pathname === "/company/settings/campos-personalizados" ||
     pathname === "/company/settings/edicion-de-layouts";
   const showPanolChildren = isExpanded && (isPanolOpen || isPanolSectionActive);
+  const showActivosChildren = isExpanded && (isActivosOpen || isActivosSectionActive);
   const showSettingsChildren = isExpanded && (isSettingsOpen || isSettingsChildActive);
 
   return (
@@ -379,6 +396,67 @@ export function CompanySidebar({
                   <LocationIcon />
                 </span>
                 <span className="font-semibold">Ubicaciones</span>
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {canViewActivos ? (
+        <div className="rounded-2xl transition">
+          <button
+            type="button"
+            className={[
+              isExpanded
+                ? "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm"
+                : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm",
+              isActivosParentActive ? "font-semibold" : "text-current",
+            ].join(" ")}
+            title={isExpanded ? undefined : "Activos"}
+            onClick={() => setIsActivosOpen((current) => !current)}
+            style={
+              isActivosParentActive
+                ? {
+                    backgroundColor: activeBgColor,
+                    color: activeTextColor,
+                  }
+                : undefined
+            }
+          >
+            <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
+              <AssetsIcon />
+            </span>
+            {isExpanded ? (
+              <>
+                <span className="font-semibold">Activos</span>
+                <span className="ml-auto">
+                  <ChevronIcon open={showActivosChildren} />
+                </span>
+              </>
+            ) : null}
+          </button>
+
+          {showActivosChildren ? (
+            <div className="space-y-1 pb-2 pl-4 pr-2">
+              <Link
+                href="/company/activos/listado-de-activos"
+                className={[
+                  "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  isActivosActive ? "font-semibold" : "text-current hover:bg-current/10",
+                ].join(" ")}
+                style={
+                  isActivosActive
+                    ? {
+                        backgroundColor: activeBgColor,
+                        color: activeTextColor,
+                      }
+                    : undefined
+                }
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <AssetsIcon />
+                </span>
+                <span className="font-semibold">Listado de Activos</span>
               </Link>
             </div>
           ) : null}

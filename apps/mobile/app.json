@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "PanolApp Mobile",
+    "slug": "panolapp-mobile",
+    "scheme": "panolapp",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "jsEngine": "hermes",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-status-bar"
+    ]
+  }
+}

@@ -16,6 +16,12 @@ export type Database = {
           slug: string;
           rut: string | null;
           logo_url: string | null;
+          button_background_color: string;
+          button_text_color: string;
+          tab_background_color: string;
+          tab_text_color: string;
+          tab_active_background_color: string;
+          tab_active_text_color: string;
           popup_background_color: string;
           popup_text_color: string;
           sidebar_bg_color: string;
@@ -33,6 +39,12 @@ export type Database = {
           slug: string;
           rut?: string | null;
           logo_url?: string | null;
+          button_background_color?: string;
+          button_text_color?: string;
+          tab_background_color?: string;
+          tab_text_color?: string;
+          tab_active_background_color?: string;
+          tab_active_text_color?: string;
           popup_background_color?: string;
           popup_text_color?: string;
           sidebar_bg_color?: string;
@@ -50,6 +62,12 @@ export type Database = {
           slug?: string;
           rut?: string | null;
           logo_url?: string | null;
+          button_background_color?: string;
+          button_text_color?: string;
+          tab_background_color?: string;
+          tab_text_color?: string;
+          tab_active_background_color?: string;
+          tab_active_text_color?: string;
           popup_background_color?: string;
           popup_text_color?: string;
           sidebar_bg_color?: string;
@@ -418,6 +436,7 @@ export type Database = {
           created_by_user_id: string | null;
           signed_by_user_id: string | null;
           signature_data: string | null;
+          observations: string | null;
           transfer_date: string;
           transfer_time: string;
           created_at: string;
@@ -436,6 +455,7 @@ export type Database = {
           created_by_user_id?: string | null;
           signed_by_user_id?: string | null;
           signature_data?: string | null;
+          observations?: string | null;
           transfer_date: string;
           transfer_time: string;
           created_at?: string;
@@ -454,6 +474,7 @@ export type Database = {
           created_by_user_id?: string | null;
           signed_by_user_id?: string | null;
           signature_data?: string | null;
+          observations?: string | null;
           transfer_date?: string;
           transfer_time?: string;
           created_at?: string;
@@ -824,6 +845,106 @@ export type Database = {
           },
         ];
       };
+      asset_catalog_options: {
+        Row: {
+          id: string;
+          company_id: string;
+          field_key: string;
+          value: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          field_key: string;
+          value: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          field_key?: string;
+          value?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "asset_catalog_options_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assets: {
+        Row: {
+          id: string;
+          company_id: string;
+          af: string;
+          patente: string;
+          tipo: string;
+          marca: string;
+          modelo: string;
+          anio: string;
+          centro_costos: string;
+          id_gps: string | null;
+          horometro: number | null;
+          kilometraje: number | null;
+          image_url: string | null;
+          image_dropbox_path: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          af: string;
+          patente: string;
+          tipo: string;
+          marca: string;
+          modelo: string;
+          anio: string;
+          centro_costos: string;
+          id_gps?: string | null;
+          horometro?: number | null;
+          kilometraje?: number | null;
+          image_url?: string | null;
+          image_dropbox_path?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          af?: string;
+          patente?: string;
+          tipo?: string;
+          marca?: string;
+          modelo?: string;
+          anio?: string;
+          centro_costos?: string;
+          id_gps?: string | null;
+          horometro?: number | null;
+          kilometraje?: number | null;
+          image_url?: string | null;
+          image_dropbox_path?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assets_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       equipment_groups: {
         Row: {
           id: string;
@@ -1058,6 +1179,7 @@ export type Database = {
           p_transfer_date: string;
           p_transfer_time: string;
           p_signature_data: string;
+          p_observations: string | null;
           p_items: Json;
         };
         Returns: string;

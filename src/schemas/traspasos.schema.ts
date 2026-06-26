@@ -8,6 +8,7 @@ export const transferHeaderSchema = z.object({
   transfer_date: trimString,
   transfer_time: trimString,
   signature_data: trimString,
+  observations: z.string().trim().optional().default(""),
 });
 
 export type TransferHeaderInput = z.infer<typeof transferHeaderSchema>;

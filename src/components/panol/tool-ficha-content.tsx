@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
+import { getStatusSelectValue } from "@/lib/item-status";
 import type { ToolDetail } from "@/types/panol";
 
 type ToolFichaContentProps = {
@@ -20,6 +21,22 @@ function getLocationLabel(detail: ToolDetail) {
 
 function getEmployeeLabel(employeeName: string | null) {
   return employeeName?.trim() || "Sin asignar";
+}
+
+function formatAssignedAt(value: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(date);
 }
 
 export function ToolFichaContent({ detail, backHref }: ToolFichaContentProps) {
@@ -96,7 +113,7 @@ export function ToolFichaContent({ detail, backHref }: ToolFichaContentProps) {
             <div className="rounded-2xl border border-line/70 bg-panel/20 p-4">
               <p className="text-xs uppercase tracking-[0.22em] text-muted">Estado</p>
               <p className="mt-2 font-semibold text-foreground">
-                {detail.tool.estado ?? "Sin estado"}
+                {detail.tool.estado ? getStatusSelectValue(detail.tool.estado) : "Sin estado"}
               </p>
             </div>
             <div className="rounded-2xl border border-line/70 bg-panel/20 p-4">
@@ -201,6 +218,7 @@ export function ToolFichaContent({ detail, backHref }: ToolFichaContentProps) {
               <tr className="text-left text-xs uppercase tracking-[0.22em] text-muted">
                 <th className="border-b border-line/70 pb-3 pr-4 font-semibold">Unidad</th>
                 <th className="border-b border-line/70 pb-3 pr-4 font-semibold">Asignada a</th>
+                <th className="border-b border-line/70 pb-3 pr-4 font-semibold">Fecha asignación</th>
                 <th className="border-b border-line/70 pb-3 font-semibold">Estado</th>
               </tr>
             </thead>
@@ -215,6 +233,9 @@ export function ToolFichaContent({ detail, backHref }: ToolFichaContentProps) {
                     </td>
                     <td className="py-3 pr-4 text-muted">
                       {getEmployeeLabel(unit.employee_name)}
+                    </td>
+                    <td className="py-3 pr-4 text-muted">
+                      {isAssigned ? formatAssignedAt(unit.assigned_at) : ""}
                     </td>
                     <td className="py-3">
                       <span

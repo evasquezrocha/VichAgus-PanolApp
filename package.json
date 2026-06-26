@@ -2,11 +2,18 @@
   "name": "panolapp",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "mobile:dev": "npm --prefix apps/mobile run start",
+    "mobile:android": "npm --prefix apps/mobile run android",
+    "mobile:ios": "npm --prefix apps/mobile run ios",
     "create:super-admin": "node scripts/create-super-admin.mjs"
   },
   "dependencies": {

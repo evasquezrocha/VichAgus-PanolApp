@@ -107,6 +107,7 @@ function getSampleRuntime(companyLogoUrl: string | null): PdfLayoutRuntimeContex
       equipment_count: "2",
       tool_count: "3",
       signed_by: "Carlos Rojas",
+      observations: "Movimiento autorizado por jefatura.",
     },
     imageValues: {
       company_logo_url: companyLogoUrl,
@@ -894,6 +895,7 @@ export function PdfLayoutTemplateEditor({
                         <option value="equipment_count">Equipos</option>
                         <option value="tool_count">Herramientas</option>
                         <option value="signed_by">Firmado por</option>
+                        <option value="observations">Observaciones</option>
                       </select>
                     </label>
                     <label className="block">

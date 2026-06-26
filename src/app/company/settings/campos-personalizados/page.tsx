@@ -79,11 +79,9 @@ export default async function CompanyCustomFieldsPage({
           <Link
             href="/company/settings/campos-personalizados?tab=listado-de-herramientas"
             className={[
-              "rounded-full px-5 py-3 text-sm font-semibold transition",
-              activeTab === "listado-de-herramientas"
-                ? "bg-[#2b3a44] text-white"
-                : "border border-line bg-white text-foreground hover:bg-panel",
+              "company-tab-link rounded-full border border-line px-5 py-3 text-sm font-semibold transition",
             ].join(" ")}
+            data-active={activeTab === "listado-de-herramientas" ? "true" : "false"}
           >
             Listado de Herramientas
           </Link>

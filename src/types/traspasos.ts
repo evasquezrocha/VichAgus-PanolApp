@@ -63,6 +63,7 @@ export type EmployeeTransfer = {
   created_by_user_id: string | null;
   signed_by_user_id: string | null;
   signature_data: string | null;
+  observations: string | null;
   transfer_date: string;
   transfer_time: string;
   created_at: string;

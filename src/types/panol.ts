@@ -66,6 +66,7 @@ export type ToolUnitSummary = {
   employee_id: string | null;
   employee_name: string | null;
   allocation_id: string | null;
+  assigned_at: string | null;
 };
 
 export type ToolDetailCustomFieldValue = {

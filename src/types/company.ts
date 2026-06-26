@@ -4,6 +4,12 @@ export type Company = {
   slug: string;
   rut: string | null;
   logo_url: string | null;
+  button_background_color: string;
+  button_text_color: string;
+  tab_background_color: string;
+  tab_text_color: string;
+  tab_active_background_color: string;
+  tab_active_text_color: string;
   popup_background_color: string;
   popup_text_color: string;
   sidebar_bg_color: string;

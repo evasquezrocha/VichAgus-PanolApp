@@ -61,11 +61,9 @@ export default async function CompanyPdfLayoutsPage({
                   <Link
                     key={layout.id}
                     className={[
-                      "block rounded-2xl border px-4 py-3 transition",
-                      isActive
-                        ? "border-[#52D6A4] bg-[#52D6A4]/14"
-                        : "border-slate-200 bg-white hover:border-[#52D6A4]/40 hover:bg-slate-50",
+                      "company-tab-link block rounded-2xl border px-4 py-3 transition",
                     ].join(" ")}
+                    data-active={isActive ? "true" : "false"}
                     href={`/company/settings/edicion-de-layouts?layout=${layout.template_key}`}
                   >
                     <div className="flex items-start justify-between gap-3">

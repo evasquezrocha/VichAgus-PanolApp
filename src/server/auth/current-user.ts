@@ -17,6 +17,12 @@ type CurrentProfileRow = {
     name: string;
     rut: string | null;
     logo_url: string | null;
+    button_background_color: string | null;
+    button_text_color: string | null;
+    tab_background_color: string | null;
+    tab_text_color: string | null;
+    tab_active_background_color: string | null;
+    tab_active_text_color: string | null;
     popup_background_color: string | null;
     popup_text_color: string | null;
     sidebar_bg_color: string | null;
@@ -100,9 +106,11 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
 
   const data =
     (await readProfile(
-      "id, company_id, role_id, full_name, email, role, is_active, companies(name, rut, logo_url, popup_background_color, popup_text_color, sidebar_bg_color, sidebar_text_color, sidebar_active_bg_color, sidebar_active_text_color, platform_background_color)",
+      "id, company_id, role_id, full_name, email, role, is_active, companies(name, rut, logo_url, button_background_color, button_text_color, tab_background_color, tab_text_color, tab_active_background_color, tab_active_text_color, popup_background_color, popup_text_color, sidebar_bg_color, sidebar_text_color, sidebar_active_bg_color, sidebar_active_text_color, platform_background_color)",
     )) ??
-    (await readProfile("id, company_id, role_id, full_name, email, role, is_active, companies(name)"));
+    (await readProfile(
+      "id, company_id, role_id, full_name, email, role, is_active, companies(name, rut, logo_url, popup_background_color, popup_text_color, sidebar_bg_color, sidebar_text_color, sidebar_active_bg_color, sidebar_active_text_color, platform_background_color)",
+    ));
 
   if (!data) {
     return null;
@@ -134,6 +142,14 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
     company_name: companies?.name ?? null,
     company_rut: companies?.rut ?? null,
     company_logo_url: companies?.logo_url ?? null,
+    company_button_background_color:
+      companies?.button_background_color ?? null,
+    company_button_text_color: companies?.button_text_color ?? null,
+    company_tab_background_color: companies?.tab_background_color ?? null,
+    company_tab_text_color: companies?.tab_text_color ?? null,
+    company_tab_active_background_color:
+      companies?.tab_active_background_color ?? null,
+    company_tab_active_text_color: companies?.tab_active_text_color ?? null,
     company_popup_background_color: companies?.popup_background_color ?? null,
     company_popup_text_color: companies?.popup_text_color ?? null,
     company_sidebar_bg_color: companies?.sidebar_bg_color ?? null,
