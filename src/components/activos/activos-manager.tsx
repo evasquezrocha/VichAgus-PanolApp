@@ -5,6 +5,7 @@ import { PendingButton } from "@/components/ui/pending-button";
 import { buildAssetYearSuggestions, formatAssetNumericValue } from "@/lib/activos";
 import type { Asset, AssetCatalogFieldKey } from "@/types/activos";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { InputHTMLAttributes } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -55,6 +56,7 @@ function AssetInput({
   helperText,
   uppercase = false,
   inputMode,
+  maxLength,
   pattern,
   step,
 }: {
@@ -67,6 +69,7 @@ function AssetInput({
   helperText?: string;
   uppercase?: boolean;
   inputMode?: InputHTMLAttributes<HTMLInputElement>["inputMode"];
+  maxLength?: number;
   pattern?: string;
   step?: string;
 }) {
@@ -81,6 +84,7 @@ function AssetInput({
         inputMode={inputMode}
         list={listId}
         name={name}
+        maxLength={maxLength}
         pattern={pattern}
         placeholder={placeholder}
         required={required}
@@ -99,6 +103,7 @@ function AssetInput({
 }
 
 export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) {
+  const router = useRouter();
   const [assetModalState, setAssetModalState] = useState<AssetModalState>(null);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("af");
@@ -341,7 +346,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
                   onClick={() => toggleSort("anio")}
                   type="button"
                 >
-                  Ano
+                  Año
                   <SortIcon direction={getSortDirectionForKey("anio")} />
                 </button>
               </th>
@@ -401,7 +406,16 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
             {sortedAssets.map((asset) => (
               <tr
                 key={asset.id}
-                className="border-b border-line/60 align-top transition hover:bg-panel/40"
+                className="cursor-pointer border-b border-line/60 align-top transition hover:bg-panel/40"
+                onClick={() => router.push(`/company/activos/${asset.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    router.push(`/company/activos/${asset.id}`);
+                  }
+                }}
+                role="link"
+                tabIndex={0}
               >
                 <td className="py-3 pr-2 align-middle font-semibold text-foreground">
                   {asset.af}
@@ -493,7 +507,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
               uppercase
             />
             <AssetInput
-              helperText="Selecciona una opcion existente o escribe una nueva. Se guardara para futuros activos."
+              helperText="Selecciona una opción existente o escribe una nueva. Se guardará para futuros activos."
               label="Tipo"
               listId="asset-tipo-options"
               name="tipo"
@@ -502,7 +516,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
               suggestions={catalogOptions.tipo}
             />
             <AssetInput
-              helperText="Selecciona una opcion existente o escribe una nueva. Se guardara para futuros activos."
+              helperText="Selecciona una opción existente o escribe una nueva. Se guardará para futuros activos."
               label="Marca"
               listId="asset-marca-options"
               name="marca"
@@ -511,7 +525,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
               suggestions={catalogOptions.marca}
             />
             <AssetInput
-              helperText="Selecciona una opcion existente o escribe una nueva. Se guardara para futuros activos."
+              helperText="Selecciona una opción existente o escribe una nueva. Se guardará para futuros activos."
               label="Modelo"
               listId="asset-modelo-options"
               name="modelo"
@@ -520,18 +534,18 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
               suggestions={catalogOptions.modelo}
             />
             <AssetInput
-              helperText="Selecciona una opcion existente o escribe una nueva. Se guardara para futuros activos."
-              label="Ano"
+              helperText="Selecciona una opción existente o escribe una nueva. Se guardará para futuros activos."
+              label="Año"
               listId="asset-anio-options"
               name="anio"
               placeholder="2026"
               required
               suggestions={yearSuggestions}
               inputMode="numeric"
-              pattern="^\\d{4}$"
+              maxLength={4}
             />
             <AssetInput
-              helperText="Selecciona una opcion existente o escribe una nueva. Se guardara para futuros activos."
+              helperText="Selecciona una opción existente o escribe una nueva. Se guardará para futuros activos."
               label="Centro de Costos"
               listId="asset-centro-costos-options"
               name="centro_costos"

@@ -31,6 +31,24 @@ export async function listAssetsForCurrentCompanyAdmin(): Promise<Asset[]> {
   return (data ?? []) as Asset[];
 }
 
+export async function getAssetByIdForCurrentCompanyAdmin(assetId: string): Promise<Asset | null> {
+  const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
+  const admin = createSupabaseAdminClient();
+
+  const { data, error } = await admin
+    .from("assets")
+    .select("*")
+    .eq("company_id", companyId)
+    .eq("id", assetId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? null) as Asset | null;
+}
+
 export async function listAssetCatalogOptionsForCurrentCompanyAdmin(): Promise<
   Record<AssetCatalogFieldKey, string[]>
 > {

@@ -33,6 +33,10 @@ export type Asset = {
   updated_at: string;
 };
 
+export type AssetDetail = {
+  asset: Asset;
+};
+
 export type AssetInput = {
   af: string;
   patente: string;
@@ -45,4 +49,3 @@ export type AssetInput = {
   horometro?: string | null;
   kilometraje?: string | null;
 };
-

@@ -5,6 +5,7 @@ import { ASSET_CATALOG_FIELD_KEYS } from "@/lib/activos";
 import {
   createAssetForCurrentCompanyAdmin,
   ensureAssetCatalogOptionForCompany,
+  getAssetByIdForCurrentCompanyAdmin,
   listAssetCatalogOptionsForCurrentCompanyAdmin,
   listAssetsForCurrentCompanyAdmin,
 } from "@/server/dal/activos.dal";
@@ -53,6 +54,10 @@ export async function listAssets() {
 
 export async function listAssetCatalogOptions() {
   return listAssetCatalogOptionsForCurrentCompanyAdmin();
+}
+
+export async function getAssetById(assetId: string) {
+  return getAssetByIdForCurrentCompanyAdmin(assetId);
 }
 
 export async function createAsset(input: AssetFormInput, imageFile?: File | null) {

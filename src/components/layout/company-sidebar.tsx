@@ -203,9 +203,8 @@ export function CompanySidebar({
     pathname === "/company/panol/empleados" ||
     pathname === "/company/panol/ubicaciones" ||
     pathname === "/company/panol/traspasos";
-  const isActivosParentActive = pathname.startsWith("/company/activos");
-  const isActivosSectionActive =
-    pathname === "/company/activos/listado-de-activos" || pathname === "/company/activos";
+  const isActivosParentActive = pathname === "/company/activos";
+  const isActivosSectionActive = pathname.startsWith("/company/activos/");
   const isToolsActive = pathname === "/company/panol/herramientas";
   const isEquiposActive = pathname === "/company/panol/equipos";
   const isEmpleadosActive = pathname === "/company/panol/empleados";
@@ -428,7 +427,7 @@ export function CompanySidebar({
             </span>
             {isExpanded ? (
               <>
-                <span className="font-semibold">Activos</span>
+                  <span className="font-semibold">Activos</span>
                 <span className="ml-auto">
                   <ChevronIcon open={showActivosChildren} />
                 </span>
