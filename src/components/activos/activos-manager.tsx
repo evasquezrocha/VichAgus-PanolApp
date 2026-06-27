@@ -233,7 +233,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
     setAssetModalState(null);
   }
 
-  const tableMinWidth = 1520;
+  const tableMinWidth = 1240;
 
   return (
     <div className="space-y-6">
@@ -283,9 +283,6 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
             <col className="w-40" />
             <col className="w-24" />
             <col className="w-44" />
-            <col className="w-36" />
-            <col className="w-28" />
-            <col className="w-32" />
             <col className="w-32" />
           </colgroup>
           <thead>
@@ -363,36 +360,6 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
               <th className="pb-2 pr-2 font-semibold">
                 <button
                   className="inline-flex items-center font-semibold"
-                  onClick={() => toggleSort("id_gps")}
-                  type="button"
-                >
-                  ID GPS
-                  <SortIcon direction={getSortDirectionForKey("id_gps")} />
-                </button>
-              </th>
-              <th className="pb-2 pr-2 font-semibold">
-                <button
-                  className="inline-flex items-center font-semibold"
-                  onClick={() => toggleSort("horometro")}
-                  type="button"
-                >
-                  Horometro
-                  <SortIcon direction={getSortDirectionForKey("horometro")} />
-                </button>
-              </th>
-              <th className="pb-2 pr-2 font-semibold">
-                <button
-                  className="inline-flex items-center font-semibold"
-                  onClick={() => toggleSort("kilometraje")}
-                  type="button"
-                >
-                  Kilometraje
-                  <SortIcon direction={getSortDirectionForKey("kilometraje")} />
-                </button>
-              </th>
-              <th className="pb-2 pr-2 font-semibold">
-                <button
-                  className="inline-flex items-center font-semibold"
                   onClick={() => toggleSort("image")}
                   type="button"
                 >
@@ -426,13 +393,6 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
                 <td className="py-3 pr-2 align-middle text-muted">{asset.modelo}</td>
                 <td className="py-3 pr-2 align-middle text-muted">{asset.anio}</td>
                 <td className="py-3 pr-2 align-middle text-muted">{asset.centro_costos}</td>
-                <td className="py-3 pr-2 align-middle text-muted">{asset.id_gps ?? "-"}</td>
-                <td className="py-3 pr-2 align-middle text-muted">
-                  {formatAssetNumericValue(asset.horometro)}
-                </td>
-                <td className="py-3 pr-2 align-middle text-muted">
-                  {formatAssetNumericValue(asset.kilometraje)}
-                </td>
                 <td className="py-3 pr-2 align-middle text-muted">
                   {asset.image_url ? (
                     <div className="flex items-center gap-2">
@@ -455,7 +415,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
 
             {sortedAssets.length === 0 ? (
               <tr>
-                <td className="py-10 text-center text-muted" colSpan={11}>
+                <td className="py-10 text-center text-muted" colSpan={8}>
                   No hay activos que coincidan con la busqueda.
                 </td>
               </tr>

@@ -25,11 +25,7 @@ export default async function AssetDetailPage({
   }
 
   return (
-    <CompanyShell
-      profile={profile}
-      title="Activos"
-      subtitle="Ficha detallada del activo seleccionado."
-    >
+    <CompanyShell profile={profile}>
       <section className="space-y-6">
         <FlashBanner flash={flash} />
         <ActivoFichaContent asset={asset} backHref="/company/activos/listado-de-activos" />
