@@ -66,34 +66,6 @@ export default async function AssetQrPage({ params }: AssetQrPageProps) {
             </Link>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-line bg-panel/20 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-muted">Documentos</p>
-              <p className="mt-2 text-2xl font-semibold">{documents.length}</p>
-            </div>
-            <div className="rounded-2xl border border-line bg-panel/20 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-muted">Con vencimiento</p>
-              <p className="mt-2 text-2xl font-semibold">
-                {documents.filter((document) => document.expiration_date).length}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-line bg-panel/20 p-4">
-              <p className="text-xs uppercase tracking-[0.22em] text-muted">Alertas activas</p>
-              <p className="mt-2 text-2xl font-semibold">
-                {
-                  documents.filter((document) => {
-                    if (!document.expiration_date) {
-                      return false;
-                    }
-
-                    const days = getDaysUntil(document.expiration_date);
-                    return days !== null && days <= document.notice_days;
-                  }).length
-                }
-              </p>
-            </div>
-          </div>
-
           <div className="mt-8 space-y-6">
             {Object.entries(groupedDocuments).length > 0 ? (
               Object.entries(groupedDocuments).map(([category, categoryDocuments]) => (
