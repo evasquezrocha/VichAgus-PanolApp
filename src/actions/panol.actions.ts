@@ -117,8 +117,8 @@ export async function updateToolAction(formData: FormData) {
         id: String(formData.get("tool_id") ?? ""),
         ...parsed,
         image_url: String(formData.get("current_image_url") ?? "").trim() || null,
-        image_dropbox_path:
-          String(formData.get("current_image_dropbox_path") ?? "").trim() || null,
+        image_storage_path:
+          String(formData.get("current_image_storage_path") ?? "").trim() || null,
       },
       extractCustomFieldValues(formData),
       imageFile instanceof File ? imageFile : null,

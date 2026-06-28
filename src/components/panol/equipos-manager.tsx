@@ -849,7 +849,7 @@ export function EquipmentsManager({
                               unoptimized
                               width={32}
                             />
-                            <span className="whitespace-nowrap text-[11px]">Dropbox</span>
+                            <span className="whitespace-nowrap text-[11px]">R2</span>
                           </button>
                         ) : (
                           "Pendiente"
@@ -930,9 +930,9 @@ export function EquipmentsManager({
                 value={dialogEquipment?.image_url ?? ""}
               />
               <input
-                name="current_image_dropbox_path"
+                name="current_image_storage_path"
                 type="hidden"
-                value={dialogEquipment?.image_dropbox_path ?? ""}
+                value={dialogEquipment?.image_storage_path ?? ""}
               />
 
               <div className="flex items-start justify-between gap-4">

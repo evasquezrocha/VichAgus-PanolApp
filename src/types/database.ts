@@ -681,7 +681,7 @@ export type Database = {
           marca: string | null;
           modelo: string | null;
           image_url: string | null;
-          image_dropbox_path: string | null;
+          image_storage_path: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -698,7 +698,7 @@ export type Database = {
           marca?: string | null;
           modelo?: string | null;
           image_url?: string | null;
-          image_dropbox_path?: string | null;
+          image_storage_path?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -715,7 +715,7 @@ export type Database = {
           marca?: string | null;
           modelo?: string | null;
           image_url?: string | null;
-          image_dropbox_path?: string | null;
+          image_storage_path?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -895,7 +895,7 @@ export type Database = {
           horometro: number | null;
           kilometraje: number | null;
           image_url: string | null;
-          image_dropbox_path: string | null;
+          image_storage_path: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -913,7 +913,7 @@ export type Database = {
           horometro?: number | null;
           kilometraje?: number | null;
           image_url?: string | null;
-          image_dropbox_path?: string | null;
+          image_storage_path?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -931,7 +931,7 @@ export type Database = {
           horometro?: number | null;
           kilometraje?: number | null;
           image_url?: string | null;
-          image_dropbox_path?: string | null;
+          image_storage_path?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -941,6 +941,108 @@ export type Database = {
             columns: ["company_id"];
             isOneToOne: false;
             referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      asset_document_types: {
+        Row: {
+          id: string;
+          company_id: string;
+          name: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          name: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          name?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "asset_document_types_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      asset_documents: {
+        Row: {
+          id: string;
+          company_id: string;
+          asset_id: string;
+          document_type_id: string;
+          category: string;
+          visible_qr: boolean;
+          expiration_date: string | null;
+          notice_days: number;
+          file_url: string;
+          file_storage_path: string;
+          file_name: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          asset_id: string;
+          document_type_id: string;
+          category: string;
+          visible_qr?: boolean;
+          expiration_date?: string | null;
+          notice_days?: number;
+          file_url: string;
+          file_storage_path: string;
+          file_name: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          asset_id?: string;
+          document_type_id?: string;
+          category?: string;
+          visible_qr?: boolean;
+          expiration_date?: string | null;
+          notice_days?: number;
+          file_url?: string;
+          file_storage_path?: string;
+          file_name?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "asset_documents_asset_id_fkey";
+            columns: ["asset_id"];
+            isOneToOne: false;
+            referencedRelation: "assets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "asset_documents_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "asset_documents_document_type_id_fkey";
+            columns: ["document_type_id"];
+            isOneToOne: false;
+            referencedRelation: "asset_document_types";
             referencedColumns: ["id"];
           },
         ];
@@ -995,7 +1097,7 @@ export type Database = {
           marca: string | null;
           modelo: string | null;
           image_url: string | null;
-          image_dropbox_path: string | null;
+          image_storage_path: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -1013,7 +1115,7 @@ export type Database = {
           marca?: string | null;
           modelo?: string | null;
           image_url?: string | null;
-          image_dropbox_path?: string | null;
+          image_storage_path?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1031,7 +1133,7 @@ export type Database = {
           marca?: string | null;
           modelo?: string | null;
           image_url?: string | null;
-          image_dropbox_path?: string | null;
+          image_storage_path?: string | null;
           created_at?: string;
           updated_at?: string;
         };

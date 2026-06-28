@@ -389,7 +389,7 @@ export async function getEquipmentDetailForCurrentCompanyAdmin(
 }
 
 export async function createEquipmentForCurrentCompanyAdmin(
-  input: EquipmentInput & { image_url: string | null; image_dropbox_path: string | null },
+  input: EquipmentInput & { image_url: string | null; image_storage_path: string | null },
 ): Promise<Equipment> {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
 
@@ -404,7 +404,7 @@ export async function createEquipmentForCurrentCompanyAdmin(
     marca: input.marca?.trim() || null,
     modelo: input.modelo?.trim() || null,
     image_url: input.image_url,
-    image_dropbox_path: input.image_dropbox_path,
+    image_storage_path: input.image_storage_path,
   };
 
   const { data, error } = await admin
@@ -443,7 +443,7 @@ export async function updateEquipmentForCurrentCompanyAdmin(
   input: EquipmentInput & {
     id: string;
     image_url: string | null;
-    image_dropbox_path: string | null;
+    image_storage_path: string | null;
   },
 ): Promise<Equipment> {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
@@ -458,7 +458,7 @@ export async function updateEquipmentForCurrentCompanyAdmin(
     marca: input.marca?.trim() || null,
     modelo: input.modelo?.trim() || null,
     image_url: input.image_url,
-    image_dropbox_path: input.image_dropbox_path,
+    image_storage_path: input.image_storage_path,
   };
 
   const { data, error } = await admin

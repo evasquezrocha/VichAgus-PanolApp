@@ -352,13 +352,13 @@ export async function listEmployeeTransfersForCurrentCompanyAdmin(): Promise<
     admin
       .from("equipments")
       .select(
-        "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, nro_serie, cantidad, estado, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
+        "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, nro_serie, cantidad, estado, marca, modelo, image_url, image_storage_path, created_at, updated_at",
       )
       .eq("company_id", companyId),
     admin
       .from("tools")
       .select(
-        "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, estado, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
+        "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, estado, marca, modelo, image_url, image_storage_path, created_at, updated_at",
       )
       .eq("company_id", companyId),
     listLocationUsersById(companyId),
@@ -470,13 +470,13 @@ export async function getEmployeeTransferForCurrentCompanyAdmin(
       admin
         .from("equipments")
         .select(
-          "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, nro_serie, cantidad, estado, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
+          "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, nro_serie, cantidad, estado, marca, modelo, image_url, image_storage_path, created_at, updated_at",
         )
         .eq("company_id", companyId),
       admin
         .from("tools")
         .select(
-          "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, estado, marca, modelo, image_url, image_dropbox_path, created_at, updated_at",
+          "id, codigo, descripcion, tool_group_id, company_id, ubicacion_id, cantidad, unidad, estado, marca, modelo, image_url, image_storage_path, created_at, updated_at",
         )
         .eq("company_id", companyId),
       listLocationUsersById(companyId),

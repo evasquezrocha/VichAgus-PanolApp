@@ -22,15 +22,15 @@ import type {
   ToolGroupInput,
   ToolInput,
 } from "@/schemas/panol.schema";
-import { uploadFileToDropbox } from "@/lib/dropbox";
+import { uploadFileToStorage } from "@/lib/storage";
 
-function getDropboxBaseFolder() {
-  return (process.env.DROPBOX_BASE_FOLDER ?? "/PanolApp").replace(/\/$/, "");
+function getStorageBaseFolder() {
+  return (process.env.STORAGE_BASE_FOLDER ?? "/PanolApp").replace(/\/$/, "");
 }
 
 async function getToolImagesFolder() {
   const companySlug = await getCurrentCompanySlugForCurrentCompanyAdmin();
-  return `${getDropboxBaseFolder()}/${companySlug}/Herramientas`;
+  return `${getStorageBaseFolder()}/${companySlug}/Herramientas`;
 }
 
 export async function listToolGroups() {
@@ -84,19 +84,19 @@ export async function createTool(
   imageFile?: File | null,
 ) {
   let imageUrl: string | null = null;
-  let imageDropboxPath: string | null = null;
+  let imageStoragePath: string | null = null;
 
   if (imageFile && imageFile.size > 0) {
-    const uploaded = await uploadFileToDropbox(imageFile, await getToolImagesFolder());
+    const uploaded = await uploadFileToStorage(imageFile, await getToolImagesFolder());
     imageUrl = uploaded.url;
-    imageDropboxPath = uploaded.path;
+    imageStoragePath = uploaded.path;
   }
 
   return createToolForCurrentCompanyAdmin({
     ...input,
     estado: input.estado,
     image_url: imageUrl,
-    image_dropbox_path: imageDropboxPath,
+    image_storage_path: imageStoragePath,
   }).then(async (tool) => {
     await replaceToolCustomFieldValuesForCurrentCompanyAdmin(
       tool.id,
@@ -110,25 +110,25 @@ export async function updateTool(
   input: ToolInput & {
     id: string;
     image_url: string | null;
-    image_dropbox_path: string | null;
+    image_storage_path: string | null;
   },
   customFieldValues: Record<string, string | null>,
   imageFile?: File | null,
 ) {
   let imageUrl = input.image_url;
-  let imageDropboxPath = input.image_dropbox_path;
+  let imageStoragePath = input.image_storage_path;
 
   if (imageFile && imageFile.size > 0) {
-    const uploaded = await uploadFileToDropbox(imageFile, await getToolImagesFolder());
+    const uploaded = await uploadFileToStorage(imageFile, await getToolImagesFolder());
     imageUrl = uploaded.url;
-    imageDropboxPath = uploaded.path;
+    imageStoragePath = uploaded.path;
   }
 
   return updateToolForCurrentCompanyAdmin({
     ...input,
     estado: input.estado,
     image_url: imageUrl,
-    image_dropbox_path: imageDropboxPath,
+    image_storage_path: imageStoragePath,
   }).then(async (tool) => {
     await replaceToolCustomFieldValuesForCurrentCompanyAdmin(
       tool.id,

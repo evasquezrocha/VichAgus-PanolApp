@@ -22,7 +22,7 @@ export type Tool = {
   marca: string | null;
   modelo: string | null;
   image_url: string | null;
-  image_dropbox_path: string | null;
+  image_storage_path: string | null;
   created_at: string;
   updated_at: string;
 } & LocationAssignmentFields;

@@ -2,7 +2,7 @@
 
 import { createAssetAction } from "@/actions/activos.actions";
 import { PendingButton } from "@/components/ui/pending-button";
-import { buildAssetYearSuggestions, formatAssetNumericValue } from "@/lib/activos";
+import { buildAssetYearSuggestions } from "@/lib/activos";
 import type { Asset, AssetCatalogFieldKey } from "@/types/activos";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -39,6 +39,15 @@ function SortIcon({ direction }: { direction: SortDirection | null }) {
       <span className={direction === "asc" ? "text-foreground" : ""}>^</span>
       <span className={direction === "desc" ? "text-foreground" : ""}>v</span>
     </span>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+    </svg>
   );
 }
 
@@ -233,7 +242,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
     setAssetModalState(null);
   }
 
-  const tableMinWidth = 1240;
+  const tableMinWidth = 1320;
 
   return (
     <div className="space-y-6">
@@ -284,6 +293,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
             <col className="w-24" />
             <col className="w-44" />
             <col className="w-32" />
+            <col className="w-24" />
           </colgroup>
           <thead>
             <tr className="border-b border-line text-left text-[10px] uppercase tracking-[0.2em] text-muted">
@@ -367,6 +377,7 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
                   <SortIcon direction={getSortDirectionForKey("image")} />
                 </button>
               </th>
+              <th className="pb-2 font-semibold">Editar</th>
             </tr>
           </thead>
           <tbody>
@@ -410,12 +421,31 @@ export function ActivosManager({ assets, catalogOptions }: ActivosManagerProps) 
                     "-"
                   )}
                 </td>
+                <td
+                  className="py-3 align-middle"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
+                  <button
+                    aria-label={`Editar activo ${asset.af}`}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-white text-foreground transition hover:bg-panel"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      router.push(`/company/activos/${asset.id}`);
+                    }}
+                    title="Editar activo"
+                    type="button"
+                  >
+                    <EditIcon />
+                  </button>
+                </td>
               </tr>
             ))}
 
             {sortedAssets.length === 0 ? (
               <tr>
-                <td className="py-10 text-center text-muted" colSpan={8}>
+                <td className="py-10 text-center text-muted" colSpan={9}>
                   No hay activos que coincidan con la busqueda.
                 </td>
               </tr>

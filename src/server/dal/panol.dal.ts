@@ -372,7 +372,7 @@ export async function getToolDetailForCurrentCompanyAdmin(toolId: string): Promi
 }
 
 export async function createToolForCurrentCompanyAdmin(
-  input: ToolInput & { image_url: string | null; image_dropbox_path: string | null },
+  input: ToolInput & { image_url: string | null; image_storage_path: string | null },
 ): Promise<Tool> {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
 
@@ -391,7 +391,7 @@ export async function createToolForCurrentCompanyAdmin(
       marca: input.marca?.trim() || null,
       modelo: input.modelo?.trim() || null,
       image_url: input.image_url,
-      image_dropbox_path: input.image_dropbox_path,
+      image_storage_path: input.image_storage_path,
     })
     .select("*")
     .single();
@@ -407,7 +407,7 @@ export async function updateToolForCurrentCompanyAdmin(
   input: ToolInput & {
     id: string;
     image_url: string | null;
-    image_dropbox_path: string | null;
+    image_storage_path: string | null;
   },
 ): Promise<Tool> {
   const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
@@ -426,7 +426,7 @@ export async function updateToolForCurrentCompanyAdmin(
       marca: input.marca?.trim() || null,
       modelo: input.modelo?.trim() || null,
       image_url: input.image_url,
-      image_dropbox_path: input.image_dropbox_path,
+      image_storage_path: input.image_storage_path,
     })
     .eq("id", input.id)
     .eq("company_id", companyId)

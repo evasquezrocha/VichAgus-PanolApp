@@ -1,18 +1,12 @@
 import "server-only";
 
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { uploadFileToStorage } from "@/lib/storage";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/server/auth/guards";
-import type {
-  CompanyInput,
-  CompanySettingsInput,
-} from "@/schemas/company.schema";
+import type { CompanyInput, CompanySettingsInput } from "@/schemas/company.schema";
 import type { Company } from "@/types/company";
-import { randomUUID } from "node:crypto";
 import { generateUniqueCompanySlug } from "./company-slug";
 import { ensureTenantDefaultRoles } from "./roles.dal";
-
-const COMPANY_LOGO_BUCKET = "company-logos";
 
 export async function listCompaniesForPlatformAdmin(): Promise<Company[]> {
   await requirePermission("companies.read");
@@ -110,23 +104,14 @@ export async function uploadCompanyLogoForCurrentCompanyAdmin(file: File) {
     throw new Error("Current user is not assigned to a company.");
   }
 
-  const admin = createSupabaseAdminClient();
-  const extension =
-    file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
-  const path = `${currentProfile.company_id}/${randomUUID()}.${extension}`;
-  const body = Buffer.from(await file.arrayBuffer());
+  const uploaded = await uploadFileToStorage(
+    file,
+    `${currentProfile.company_id}/company-logo`,
+  );
 
-  const { error: uploadError } = await admin.storage
-    .from(COMPANY_LOGO_BUCKET)
-    .upload(path, body, {
-      contentType: file.type || "application/octet-stream",
-      upsert: true,
-    });
-
-  if (uploadError) {
-    throw new Error(uploadError.message);
+  if (!uploaded.url) {
+    throw new Error("No se pudo resolver la URL publica del logo.");
   }
 
-  const { data } = admin.storage.from(COMPANY_LOGO_BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+  return uploaded.url;
 }

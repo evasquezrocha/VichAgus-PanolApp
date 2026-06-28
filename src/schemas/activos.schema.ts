@@ -17,3 +17,12 @@ export const assetFormSchema = z.object({
 
 export type AssetFormInput = z.infer<typeof assetFormSchema>;
 
+export const assetDocumentFormSchema = z.object({
+  document_type: trimString,
+  category: trimString,
+  visible_qr: z.enum(["true", "false"]).default("false"),
+  expiration_date: z.string().trim().optional().default(""),
+  notice_days: z.string().trim().regex(/^\d+$/, "El aviso previo debe ser un numero entero."),
+});
+
+export type AssetDocumentFormInput = z.infer<typeof assetDocumentFormSchema>;

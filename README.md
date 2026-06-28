@@ -10,6 +10,19 @@ This repository keeps the current desktop web app intact and starts a separate m
 
 The intended next step is a separate Expo app that consumes this API and stores pending changes locally until connectivity returns.
 
+## File Storage
+
+The app uses Cloudflare R2 for uploads used by company logos, activos, equipos and herramientas.
+
+Set these environment variables:
+
+- `R2_ACCOUNT_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET_NAME`
+- `R2_PUBLIC_BASE_URL`
+- `STORAGE_BASE_FOLDER` if you want a path prefix other than `/PanolApp`
+
 ## Getting Started
 
 First, run the development server:

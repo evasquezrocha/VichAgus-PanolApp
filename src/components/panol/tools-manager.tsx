@@ -853,7 +853,7 @@ export function ToolsManager({
                               unoptimized
                               width={32}
                             />
-                            <span className="whitespace-nowrap text-[11px]">Dropbox</span>
+                            <span className="whitespace-nowrap text-[11px]">R2</span>
                           </button>
                         ) : (
                           "Pendiente"
@@ -934,9 +934,9 @@ export function ToolsManager({
                 value={dialogTool?.image_url ?? ""}
               />
               <input
-                name="current_image_dropbox_path"
+                name="current_image_storage_path"
                 type="hidden"
-                value={dialogTool?.image_dropbox_path ?? ""}
+                value={dialogTool?.image_storage_path ?? ""}
               />
 
               <div className="flex items-start justify-between gap-4">
