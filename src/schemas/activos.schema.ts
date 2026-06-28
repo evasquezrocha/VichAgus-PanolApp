@@ -26,3 +26,9 @@ export const assetDocumentFormSchema = z.object({
 });
 
 export type AssetDocumentFormInput = z.infer<typeof assetDocumentFormSchema>;
+
+export const assetDocumentCategorySchema = z.object({
+  name: trimString,
+});
+
+export type AssetDocumentCategoryInput = z.infer<typeof assetDocumentCategorySchema>;

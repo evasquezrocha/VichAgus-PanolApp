@@ -16,6 +16,7 @@ import type {
   Asset,
   AssetCatalogFieldKey,
   AssetDocumentFilter,
+  AssetDocumentCategory,
   AssetDocument,
   AssetDocumentType,
 } from "@/types/activos";
@@ -25,8 +26,10 @@ type ActivoFichaContentProps = {
   asset: Asset | null;
   backHref: string;
   catalogOptions: Record<AssetCatalogFieldKey, string[]>;
+  documentCategories: AssetDocumentCategory[];
   documentTypes: AssetDocumentType[];
   documents: AssetDocument[];
+  initialTab?: AssetTabKey;
 };
 
 type AssetTabKey = "informacion" | "documentacion";
@@ -161,6 +164,7 @@ function downloadTextFile(content: string, fileName: string, mimeType: string) {
 
 function AssetInput({
   label,
+  id,
   name,
   defaultValue,
   required = false,
@@ -174,6 +178,7 @@ function AssetInput({
   type = "text",
 }: {
   label: string;
+  id?: string;
   name: string;
   defaultValue?: string;
   required?: boolean;
@@ -196,6 +201,7 @@ function AssetInput({
         ].join(" ")}
         defaultValue={defaultValue}
         inputMode={inputMode}
+        id={id}
         list={listId}
         maxLength={maxLength}
         name={name}
@@ -251,10 +257,12 @@ export function ActivoFichaContent({
   asset,
   backHref,
   catalogOptions,
+  documentCategories,
   documentTypes,
   documents,
+  initialTab = "informacion",
 }: ActivoFichaContentProps) {
-  const [activeTab, setActiveTab] = useState<AssetTabKey>("informacion");
+  const [activeTab, setActiveTab] = useState<AssetTabKey>(initialTab);
   const [assetModalState, setAssetModalState] = useState<AssetModalState>(null);
   const [documentModalState, setDocumentModalState] = useState<DocumentModalState>(null);
   const [documentTypeFilter, setDocumentTypeFilter] = useState<string>("all");
@@ -802,7 +810,27 @@ export function ActivoFichaContent({
               defaultValue={activeDocument?.document_type?.name ?? ""}
               suggestions={documentTypeSuggestions}
             />
-            <AssetInput label="Categoría" name="category" required defaultValue={activeDocument?.category} />
+            <label className="block">
+              <span className="text-sm font-medium">Categoría</span>
+              <select
+                className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none ring-accent/25 transition focus:ring-4"
+                defaultValue={activeDocument?.category ?? ""}
+                name="category"
+                required
+              >
+                <option value="" disabled>
+                  Selecciona una categoría
+                </option>
+                {documentCategories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-2 text-xs text-muted">
+                Solo puedes usar categorías creadas en Ajustes &gt; Documentación.
+              </p>
+            </label>
             <AssetSelect
               defaultValue={activeDocument?.visible_qr ? "true" : "false"}
               label="Visible QR"

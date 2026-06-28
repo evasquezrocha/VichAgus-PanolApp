@@ -175,6 +175,7 @@ export function CompanySidebar({
   const pathname = usePathname();
   const [isPanolOpen, setIsPanolOpen] = useState(false);
   const [isActivosOpen, setIsActivosOpen] = useState(false);
+  const [isActivosSettingsOpen, setIsActivosSettingsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const canViewDashboard = hasAnyPermission(permissions, ["company.access"]);
@@ -196,14 +197,12 @@ export function CompanySidebar({
   ]);
   const canViewSettings =
     canViewUsers || canViewRoles || canViewGeneralParameters || canViewLayoutEditor;
-  const isPanolParentActive = pathname === "/company/panol";
   const isPanolSectionActive =
     pathname === "/company/panol/herramientas" ||
     pathname === "/company/panol/equipos" ||
     pathname === "/company/panol/empleados" ||
     pathname === "/company/panol/ubicaciones" ||
     pathname === "/company/panol/traspasos";
-  const isActivosParentActive = pathname === "/company/activos";
   const isActivosSectionActive = pathname.startsWith("/company/activos/");
   const isToolsActive = pathname === "/company/panol/herramientas";
   const isEquiposActive = pathname === "/company/panol/equipos";
@@ -211,7 +210,9 @@ export function CompanySidebar({
   const isLocationsActive = pathname === "/company/panol/ubicaciones";
   const isTraspasosActive = pathname === "/company/panol/traspasos";
   const isActivosActive = pathname === "/company/activos/listado-de-activos";
-  const isSettingsParentActive = pathname === "/company/settings";
+  const isActivosSettingsParentActive = pathname.startsWith("/company/activos/ajustes");
+  const isActivosDocumentacionActive =
+    pathname === "/company/activos/ajustes/documentacion";
   const isSettingsChildActive =
     pathname === "/company/settings/users" ||
     pathname === "/company/settings/roles" ||
@@ -220,6 +221,8 @@ export function CompanySidebar({
     pathname === "/company/settings/edicion-de-layouts";
   const showPanolChildren = isExpanded && (isPanolOpen || isPanolSectionActive);
   const showActivosChildren = isExpanded && (isActivosOpen || isActivosSectionActive);
+  const showActivosSettingsChildren =
+    isExpanded && (isActivosSettingsOpen || isActivosSettingsParentActive);
   const showSettingsChildren = isExpanded && (isSettingsOpen || isSettingsChildActive);
 
   return (
@@ -258,25 +261,17 @@ export function CompanySidebar({
               isExpanded
                 ? "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm"
                 : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm",
-              isPanolParentActive ? "font-semibold" : "text-current",
+              "text-current",
             ].join(" ")}
             title={isExpanded ? undefined : "Pañol"}
             onClick={() => setIsPanolOpen((current) => !current)}
-            style={
-              isPanolParentActive
-                ? {
-                    backgroundColor: activeBgColor,
-                    color: activeTextColor,
-                  }
-                : undefined
-            }
           >
             <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
               <ToolboxIcon />
             </span>
             {isExpanded ? (
               <>
-                <span className="font-semibold">Pañol</span>
+                <span className="font-medium">Pañol</span>
                 <span className="ml-auto">
                   <ChevronIcon open={showPanolChildren} />
                 </span>
@@ -409,25 +404,17 @@ export function CompanySidebar({
               isExpanded
                 ? "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm"
                 : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm",
-              isActivosParentActive ? "font-semibold" : "text-current",
+              "text-current",
             ].join(" ")}
             title={isExpanded ? undefined : "Activos"}
             onClick={() => setIsActivosOpen((current) => !current)}
-            style={
-              isActivosParentActive
-                ? {
-                    backgroundColor: activeBgColor,
-                    color: activeTextColor,
-                  }
-                : undefined
-            }
           >
             <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
               <AssetsIcon />
             </span>
             {isExpanded ? (
               <>
-                  <span className="font-semibold">Activos</span>
+                  <span className="font-medium">Activos</span>
                 <span className="ml-auto">
                   <ChevronIcon open={showActivosChildren} />
                 </span>
@@ -457,38 +444,74 @@ export function CompanySidebar({
                 </span>
                 <span className="font-semibold">Listado de Activos</span>
               </Link>
+
+              <button
+                type="button"
+                className={[
+                  "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                  "text-current hover:bg-current/10",
+                ].join(" ")}
+                onClick={() => setIsActivosSettingsOpen((current) => !current)}
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                  <SettingsIcon />
+                </span>
+                <span className="font-medium">Ajustes</span>
+                <span className="ml-auto">
+                  <ChevronIcon open={showActivosSettingsChildren} />
+                </span>
+              </button>
+
+              {showActivosSettingsChildren ? (
+                <div className="space-y-1 pl-4 pr-2">
+                  <Link
+                    href="/company/activos/ajustes/documentacion"
+                    className={[
+                      "flex items-center gap-3 rounded-2xl px-3 py-3 text-xs transition",
+                      isActivosDocumentacionActive
+                        ? "font-semibold"
+                        : "text-current hover:bg-current/10",
+                    ].join(" ")}
+                    style={
+                      isActivosDocumentacionActive
+                        ? {
+                            backgroundColor: activeBgColor,
+                            color: activeTextColor,
+                          }
+                        : undefined
+                    }
+                  >
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-current/10">
+                      <SlidersIcon />
+                    </span>
+                    <span className="font-semibold">Documentación</span>
+                  </Link>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
       ) : null}
 
       {canViewSettings ? (
-        <div className={["rounded-2xl transition", showSettingsChildren ? "bg-current/10" : ""].join(" ")}>
+        <div className="rounded-2xl transition">
           <button
             type="button"
             className={[
               isExpanded
                 ? "flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm"
                 : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm",
-              isSettingsParentActive ? "font-semibold" : "text-current",
+              "text-current",
             ].join(" ")}
             title={isExpanded ? undefined : "Configuración"}
             onClick={() => setIsSettingsOpen((current) => !current)}
-            style={
-              isSettingsParentActive
-                ? {
-                    backgroundColor: activeBgColor,
-                    color: activeTextColor,
-                  }
-                : undefined
-            }
           >
             <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
               <SettingsIcon />
             </span>
             {isExpanded ? (
               <>
-                <span className="font-semibold">Configuración</span>
+                <span className="font-medium">Configuración</span>
                 <span className="ml-auto">
                   <ChevronIcon open={showSettingsChildren} />
                 </span>

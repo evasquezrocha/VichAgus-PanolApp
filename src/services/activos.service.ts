@@ -5,24 +5,29 @@ import { deleteFileFromStorage, uploadFileToStorage } from "@/lib/storage";
 import {
   createAssetForCurrentCompanyAdmin,
   createAssetDocumentForCurrentCompanyAdmin,
+  deleteAssetDocumentCategoryForCurrentCompanyAdmin,
   deleteAssetDocumentForCurrentCompanyAdmin,
   ensureAssetCatalogOptionForCompany,
+  ensureAssetDocumentCategoryForCompany,
   ensureAssetDocumentTypeForCompany,
   getAssetByIdForCurrentCompanyAdmin,
   getAssetByIdForPublicQr,
+  getAssetDocumentCategoryByIdForCurrentCompanyAdmin,
   getAssetDocumentByIdForCurrentCompanyAdmin,
   listAssetCatalogOptionsForCurrentCompanyAdmin,
+  listAssetDocumentCategoriesForCurrentCompanyAdmin,
   listAssetDocumentTypesForCurrentCompanyAdmin,
   listAssetDocumentsForCurrentCompanyAdmin,
   listAssetsForCurrentCompanyAdmin,
   listVisibleAssetDocumentsForPublicQr,
   updateAssetDocumentForCurrentCompanyAdmin,
+  updateAssetDocumentCategoryForCurrentCompanyAdmin,
   updateAssetForCurrentCompanyAdmin,
 } from "@/server/dal/activos.dal";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requireCompanyAdmin } from "@/server/auth/guards";
 import type { AssetDocumentFormInput, AssetFormInput } from "@/schemas/activos.schema";
-import type { AssetDocument } from "@/types/activos";
+import type { AssetDocument, AssetDocumentCategory } from "@/types/activos";
 
 function getStorageBaseFolder() {
   return (process.env.STORAGE_BASE_FOLDER ?? "/PanolApp").replace(/\/$/, "");
@@ -90,6 +95,10 @@ export async function listAssetCatalogOptions() {
 
 export async function listAssetDocumentTypes() {
   return listAssetDocumentTypesForCurrentCompanyAdmin();
+}
+
+export async function listAssetDocumentCategories(): Promise<AssetDocumentCategory[]> {
+  return listAssetDocumentCategoriesForCurrentCompanyAdmin();
 }
 
 export async function listAssetDocuments(assetId: string): Promise<AssetDocument[]> {
@@ -216,6 +225,23 @@ function parseAssetDocumentFormInput(input: AssetDocumentFormInput) {
   };
 }
 
+async function requireAssetDocumentCategoryForCompany(name: string) {
+  const normalizedName = name.trim().replace(/\s+/g, " ");
+
+  if (!normalizedName) {
+    throw new Error("La categoria es obligatoria.");
+  }
+
+  const categories = await listAssetDocumentCategoriesForCurrentCompanyAdmin();
+  const category = categories.find((item) => item.name === normalizedName);
+
+  if (!category) {
+    throw new Error("La categoria no existe. Debes crearla en Ajustes > Documentación.");
+  }
+
+  return category;
+}
+
 export async function createAssetDocument(
   assetId: string,
   input: AssetDocumentFormInput,
@@ -240,6 +266,7 @@ export async function createAssetDocument(
 
   const parsed = parseAssetDocumentFormInput(input);
   const documentType = await ensureAssetDocumentTypeForCompany(companyId, parsed.document_type);
+  await requireAssetDocumentCategoryForCompany(parsed.category);
   const uploaded = await uploadFileToStorage(file, await getAssetDocumentsFolder(companyId, assetId));
 
   return createAssetDocumentForCurrentCompanyAdmin({
@@ -281,6 +308,7 @@ export async function updateAssetDocument(
 
   const parsed = parseAssetDocumentFormInput(input);
   const documentType = await ensureAssetDocumentTypeForCompany(companyId, parsed.document_type);
+  await requireAssetDocumentCategoryForCompany(parsed.category);
 
   let fileUrl = existingDocument.file_url;
   let fileStoragePath = existingDocument.file_storage_path;
@@ -316,4 +344,55 @@ export async function deleteAssetDocument(documentId: string) {
 
   await deleteAssetDocumentForCurrentCompanyAdmin(documentId);
   await deleteFileFromStorage(existingDocument.file_storage_path).catch(() => undefined);
+}
+
+function parseAssetDocumentCategoryName(name: string) {
+  const normalized = name.trim().replace(/\s+/g, " ");
+
+  if (!normalized) {
+    throw new Error("La categoria es obligatoria.");
+  }
+
+  return normalized;
+}
+
+export async function createAssetDocumentCategory(name: string) {
+  const currentProfile = await requireCompanyAdmin();
+  const companyId = currentProfile.company_id;
+
+  if (!companyId) {
+    throw new Error("Current user is not assigned to a company.");
+  }
+
+  return ensureAssetDocumentCategoryForCompany(companyId, parseAssetDocumentCategoryName(name));
+}
+
+export async function updateAssetDocumentCategory(categoryId: string, name: string) {
+  const currentProfile = await requireCompanyAdmin();
+  const companyId = currentProfile.company_id;
+
+  if (!companyId) {
+    throw new Error("Current user is not assigned to a company.");
+  }
+
+  const category = await getAssetDocumentCategoryByIdForCurrentCompanyAdmin(categoryId);
+
+  if (!category) {
+    throw new Error("La categoria no existe.");
+  }
+
+  return updateAssetDocumentCategoryForCurrentCompanyAdmin({
+    id: categoryId,
+    name: parseAssetDocumentCategoryName(name),
+  });
+}
+
+export async function deleteAssetDocumentCategory(categoryId: string) {
+  const category = await getAssetDocumentCategoryByIdForCurrentCompanyAdmin(categoryId);
+
+  if (!category) {
+    throw new Error("La categoria no existe.");
+  }
+
+  await deleteAssetDocumentCategoryForCurrentCompanyAdmin(categoryId);
 }

@@ -6,6 +6,7 @@ import { requireCompanyAdmin } from "@/server/auth/guards";
 import {
   getAssetById,
   listAssetCatalogOptions,
+  listAssetDocumentCategories,
   listAssetDocumentTypes,
   listAssetDocuments,
 } from "@/services/activos.service";
@@ -23,6 +24,7 @@ export default async function AssetDetailPage({
   const profile = await requireCompanyAdmin();
   const { assetId } = await params;
   const flash = await getFlashMessage(searchParams);
+  const paramsData = await searchParams;
   const [asset, catalogOptions] = await Promise.all([
     getAssetById(assetId),
     listAssetCatalogOptions(),
@@ -36,6 +38,7 @@ export default async function AssetDetailPage({
     listAssetDocuments(assetId),
     listAssetDocumentTypes(),
   ]);
+  const assetDocumentCategories = await listAssetDocumentCategories();
 
   return (
     <CompanyShell profile={profile}>
@@ -44,6 +47,8 @@ export default async function AssetDetailPage({
         <ActivoFichaContent
           asset={asset}
           backHref="/company/activos/listado-de-activos"
+          initialTab={paramsData.tab === "documentacion" ? "documentacion" : "informacion"}
+          documentCategories={assetDocumentCategories}
           documentTypes={assetDocumentTypes}
           documents={assetDocuments}
           catalogOptions={catalogOptions}

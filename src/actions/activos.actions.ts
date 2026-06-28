@@ -1,12 +1,19 @@
 "use server";
 
 import { buildFlashPath, getActionErrorMessage } from "@/lib/flash";
-import { assetDocumentFormSchema, assetFormSchema } from "@/schemas/activos.schema";
+import {
+  assetDocumentCategorySchema,
+  assetDocumentFormSchema,
+  assetFormSchema,
+} from "@/schemas/activos.schema";
 import {
   createAsset,
+  createAssetDocumentCategory,
   createAssetDocument,
   deleteAssetDocument,
+  deleteAssetDocumentCategory,
   updateAssetDocument,
+  updateAssetDocumentCategory,
   updateAsset,
 } from "@/services/activos.service";
 import { revalidatePath } from "next/cache";
@@ -95,7 +102,9 @@ export async function updateAssetAction(formData: FormData) {
 
 export async function createAssetDocumentAction(formData: FormData) {
   const assetId = String(formData.get("asset_id") ?? "").trim();
-  const returnTo = assetId ? `/company/activos/${assetId}` : "/company/activos/listado-de-activos";
+  const returnTo = assetId
+    ? `/company/activos/${assetId}?tab=documentacion`
+    : "/company/activos/listado-de-activos";
 
   try {
     if (!assetId) {
@@ -131,7 +140,9 @@ export async function createAssetDocumentAction(formData: FormData) {
 export async function updateAssetDocumentAction(formData: FormData) {
   const assetId = String(formData.get("asset_id") ?? "").trim();
   const documentId = String(formData.get("document_id") ?? "").trim();
-  const returnTo = assetId ? `/company/activos/${assetId}` : "/company/activos/listado-de-activos";
+  const returnTo = assetId
+    ? `/company/activos/${assetId}?tab=documentacion`
+    : "/company/activos/listado-de-activos";
 
   try {
     if (!assetId || !documentId) {
@@ -167,7 +178,9 @@ export async function updateAssetDocumentAction(formData: FormData) {
 export async function deleteAssetDocumentAction(formData: FormData) {
   const assetId = String(formData.get("asset_id") ?? "").trim();
   const documentId = String(formData.get("document_id") ?? "").trim();
-  const returnTo = assetId ? `/company/activos/${assetId}` : "/company/activos/listado-de-activos";
+  const returnTo = assetId
+    ? `/company/activos/${assetId}?tab=documentacion`
+    : "/company/activos/listado-de-activos";
 
   try {
     if (!assetId || !documentId) {
@@ -189,4 +202,79 @@ export async function deleteAssetDocumentAction(formData: FormData) {
   revalidatePath("/company/activos/listado-de-activos");
   revalidatePath(`/qr/activos/${assetId}`);
   redirect(buildFlashPath(returnTo, "success", "Documento eliminado correctamente."));
+}
+
+export async function createAssetDocumentCategoryAction(formData: FormData) {
+  const returnTo = "/company/activos/ajustes/documentacion";
+
+  try {
+    const parsed = assetDocumentCategorySchema.parse({
+      name: formData.get("name"),
+    });
+
+    await createAssetDocumentCategory(parsed.name);
+  } catch (error) {
+    redirect(
+      buildFlashPath(
+        returnTo,
+        "error",
+        getActionErrorMessage(error, "No se pudo crear la categoria."),
+      ),
+    );
+  }
+
+  revalidatePath(returnTo);
+  redirect(buildFlashPath(returnTo, "success", "Categoria creada correctamente."));
+}
+
+export async function updateAssetDocumentCategoryAction(formData: FormData) {
+  const categoryId = String(formData.get("category_id") ?? "").trim();
+  const returnTo = "/company/activos/ajustes/documentacion";
+
+  try {
+    if (!categoryId) {
+      throw new Error("Category id is required.");
+    }
+
+    const parsed = assetDocumentCategorySchema.parse({
+      name: formData.get("name"),
+    });
+
+    await updateAssetDocumentCategory(categoryId, parsed.name);
+  } catch (error) {
+    redirect(
+      buildFlashPath(
+        returnTo,
+        "error",
+        getActionErrorMessage(error, "No se pudo actualizar la categoria."),
+      ),
+    );
+  }
+
+  revalidatePath(returnTo);
+  redirect(buildFlashPath(returnTo, "success", "Categoria actualizada correctamente."));
+}
+
+export async function deleteAssetDocumentCategoryAction(formData: FormData) {
+  const categoryId = String(formData.get("category_id") ?? "").trim();
+  const returnTo = "/company/activos/ajustes/documentacion";
+
+  try {
+    if (!categoryId) {
+      throw new Error("Category id is required.");
+    }
+
+    await deleteAssetDocumentCategory(categoryId);
+  } catch (error) {
+    redirect(
+      buildFlashPath(
+        returnTo,
+        "error",
+        getActionErrorMessage(error, "No se pudo eliminar la categoria."),
+      ),
+    );
+  }
+
+  revalidatePath(returnTo);
+  redirect(buildFlashPath(returnTo, "success", "Categoria eliminada correctamente."));
 }

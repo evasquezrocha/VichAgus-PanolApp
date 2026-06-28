@@ -6,6 +6,7 @@ import type {
   Asset,
   AssetCatalogFieldKey,
   AssetCatalogOption,
+  AssetDocumentCategory,
   AssetDocument,
   AssetDocumentType,
 } from "@/types/activos";
@@ -193,6 +194,123 @@ export async function ensureAssetDocumentTypeForCompany(companyId: string, name:
   }
 
   return data as AssetDocumentType;
+}
+
+export async function listAssetDocumentCategoriesForCurrentCompanyAdmin(): Promise<
+  AssetDocumentCategory[]
+> {
+  const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
+  const admin = createSupabaseAdminClient();
+
+  const { data, error } = await admin
+    .from("asset_document_categories")
+    .select("*")
+    .eq("company_id", companyId)
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? []) as AssetDocumentCategory[];
+}
+
+export async function ensureAssetDocumentCategoryForCompany(companyId: string, name: string) {
+  const normalizedName = name.trim().replace(/\s+/g, " ");
+
+  if (!normalizedName) {
+    throw new Error("La categoria es obligatoria.");
+  }
+
+  const admin = createSupabaseAdminClient();
+  const existing = await admin
+    .from("asset_document_categories")
+    .select("*")
+    .eq("company_id", companyId)
+    .eq("name", normalizedName)
+    .maybeSingle();
+
+  if (existing.error) {
+    throw new Error(existing.error.message);
+  }
+
+  if (existing.data) {
+    return existing.data as AssetDocumentCategory;
+  }
+
+  const { data, error } = await admin
+    .from("asset_document_categories")
+    .insert({
+      company_id: companyId,
+      name: normalizedName,
+    })
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "No se pudo guardar la categoria.");
+  }
+
+  return data as AssetDocumentCategory;
+}
+
+export async function getAssetDocumentCategoryByIdForCurrentCompanyAdmin(
+  categoryId: string,
+): Promise<AssetDocumentCategory | null> {
+  const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
+  const admin = createSupabaseAdminClient();
+
+  const { data, error } = await admin
+    .from("asset_document_categories")
+    .select("*")
+    .eq("company_id", companyId)
+    .eq("id", categoryId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data ?? null) as AssetDocumentCategory | null;
+}
+
+export async function updateAssetDocumentCategoryForCurrentCompanyAdmin(input: {
+  id: string;
+  name: string;
+}) {
+  const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
+  const admin = createSupabaseAdminClient();
+
+  const { data, error } = await admin
+    .from("asset_document_categories")
+    .update({
+      name: input.name,
+    })
+    .eq("company_id", companyId)
+    .eq("id", input.id)
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "No se pudo actualizar la categoria.");
+  }
+
+  return data as AssetDocumentCategory;
+}
+
+export async function deleteAssetDocumentCategoryForCurrentCompanyAdmin(categoryId: string) {
+  const companyId = await getCurrentCompanyIdForCurrentCompanyAdmin();
+  const admin = createSupabaseAdminClient();
+
+  const { error } = await admin
+    .from("asset_document_categories")
+    .delete()
+    .eq("company_id", companyId)
+    .eq("id", categoryId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 export async function listAssetDocumentsForCurrentCompanyAdmin(
