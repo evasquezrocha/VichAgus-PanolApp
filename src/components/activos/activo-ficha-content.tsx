@@ -129,8 +129,22 @@ function buildQrSvg(targetUrl: string) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${viewBoxSize} ${viewBoxSize}" shape-rendering="crispEdges">
   <rect width="100%" height="100%" fill="#fff" />
-  <g fill="#111">${rects.join("")}</g>
+<g fill="#111">${rects.join("")}</g>
 </svg>`;
+}
+
+function getPublicAppBaseUrl() {
+  const configuredBaseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (configuredBaseUrl) {
+    return configuredBaseUrl.replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return "http://localhost:3000";
 }
 
 function downloadTextFile(content: string, fileName: string, mimeType: string) {
@@ -372,7 +386,7 @@ export function ActivoFichaContent({
       return;
     }
 
-    const targetUrl = `${window.location.origin}/qr/activos/${asset.id}`;
+    const targetUrl = `${getPublicAppBaseUrl()}/qr/activos/${asset.id}`;
     const svg = buildQrSvg(targetUrl);
     downloadTextFile(svg, `qr-activo-${asset.af}.svg`, "image/svg+xml");
   }

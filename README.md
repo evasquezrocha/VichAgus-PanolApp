@@ -16,6 +16,7 @@ The app uses Cloudflare R2 for uploads used by company logos, activos, equipos a
 
 Set these environment variables:
 
+- `NEXT_PUBLIC_APP_URL` with the public production URL used by QR codes
 - `R2_ACCOUNT_ID`
 - `R2_ACCESS_KEY_ID`
 - `R2_SECRET_ACCESS_KEY`
