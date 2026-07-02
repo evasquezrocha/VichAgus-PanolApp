@@ -1,6 +1,7 @@
 "use server";
 
 import { buildFlashPath, getActionErrorMessage } from "@/lib/flash";
+import { getDefaultDashboardPath, getLoginPath } from "@/lib/site";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { redirect } from "next/navigation";
@@ -27,7 +28,7 @@ export async function signInWithPasswordAction(formData: FormData) {
   } catch (error) {
     redirect(
       buildFlashPath(
-        "/login",
+        getLoginPath(),
         "error",
         getActionErrorMessage(error, "No se pudo iniciar sesion."),
       ),
@@ -37,7 +38,9 @@ export async function signInWithPasswordAction(formData: FormData) {
   revalidatePath("/", "layout");
   const next = formData.get("next");
   const nextPath =
-    typeof next === "string" && next.startsWith("/") ? next : "/dashboard";
+    typeof next === "string" && next.startsWith("/")
+      ? next
+      : getDefaultDashboardPath();
   redirect(nextPath);
 }
 
@@ -45,5 +48,5 @@ export async function signOutAction() {
   const supabase = await createServerSupabaseClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/login");
+  redirect(getLoginPath());
 }

@@ -33,7 +33,15 @@ export function isTdpSite() {
 }
 
 export function getDefaultDashboardPath() {
-  return isTdpSite() ? "/tdp/dashboard" : "/dashboard";
+  return isTdpSite() ? "/tdp/panel" : "/panel";
+}
+
+export function getLoginPath() {
+  return "/login";
+}
+
+export function getTdpPublicProfileBaseUrl() {
+  return process.env.NEXT_PUBLIC_TDP_PUBLIC_URL?.trim() || "https://tdp.lopva.cl";
 }
 
 function envAsset(key: string, fallback: string) {

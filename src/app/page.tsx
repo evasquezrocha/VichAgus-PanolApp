@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { getSiteConfig, isTdpSite } from "@/lib/site";
+import { getLoginPath, getSiteConfig, isTdpSite } from "@/lib/site";
 
 const site = getSiteConfig();
 
@@ -52,7 +52,7 @@ const steps = ["Detecta lo que tienes", "Ordena quién lo usa", "Sigue cada movi
 
 export default function HomePage() {
   if (isTdpSite()) {
-    redirect("/login");
+    redirect(getLoginPath());
   }
 
   return (

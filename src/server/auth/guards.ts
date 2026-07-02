@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getCurrentProfile } from "@/server/auth/current-user";
+import { getDefaultDashboardPath, getLoginPath } from "@/lib/site";
 import {
   canAccessCompany,
   hasPermission,
@@ -15,7 +16,7 @@ export async function requireCurrentProfile(): Promise<CurrentProfile> {
   const profile = await getCurrentProfile();
 
   if (!profile) {
-    redirect("/login");
+    redirect(getLoginPath());
   }
 
   return profile;
@@ -25,7 +26,7 @@ export async function requireRole(roles: AppRole[]) {
   const profile = await requireCurrentProfile();
 
   if (!hasRole(profile, roles)) {
-    redirect("/dashboard");
+    redirect(getDefaultDashboardPath());
   }
 
   return profile;
@@ -35,7 +36,7 @@ export async function requireCompanyAdmin() {
   const profile = await requireCurrentProfile();
 
   if (!profile.company_id || !hasPermission(profile, "company.users.manage")) {
-    redirect("/dashboard");
+    redirect(getDefaultDashboardPath());
   }
 
   return profile;
@@ -45,7 +46,7 @@ export async function requirePermission(permission: AppPermission) {
   const profile = await requireCurrentProfile();
 
   if (!hasPermission(profile, permission)) {
-    redirect("/dashboard");
+    redirect(getDefaultDashboardPath());
   }
 
   return profile;
@@ -55,7 +56,7 @@ export async function requireCompanyAccess(companyId: string) {
   const profile = await requireCurrentProfile();
 
   if (!canAccessCompany(profile, companyId)) {
-    redirect("/dashboard");
+    redirect(getDefaultDashboardPath());
   }
 
   return profile;

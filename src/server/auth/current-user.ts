@@ -1,9 +1,11 @@
 import "server-only";
 
+import { isTdpSite } from "@/lib/site";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { CurrentProfile } from "@/types/auth";
 import type { AppPermission } from "@/types/permission";
 import { unstable_noStore as noStore } from "next/cache";
+import type { User } from "@supabase/supabase-js";
 
 type CurrentProfileRow = {
   id: string;
@@ -76,6 +78,41 @@ function mergePermissions(
   return Array.from(new Set([...basePermissions, ...extraPermissions]));
 }
 
+function buildTdpCurrentProfile(user: User): CurrentProfile {
+  const fullName =
+    (user.user_metadata?.full_name as string | undefined)?.trim() ||
+    user.email ||
+    null;
+
+  return {
+    id: user.id,
+    company_id: null,
+    role_id: null,
+    full_name: fullName,
+    email: user.email ?? "",
+    role: "tdp_user",
+    is_active: true,
+    company_name: null,
+    company_rut: null,
+    company_logo_url: null,
+    company_button_background_color: null,
+    company_button_text_color: null,
+    company_tab_background_color: null,
+    company_tab_text_color: null,
+    company_tab_active_background_color: null,
+    company_tab_active_text_color: null,
+    company_popup_background_color: null,
+    company_popup_text_color: null,
+    company_sidebar_bg_color: null,
+    company_sidebar_text_color: null,
+    company_sidebar_active_bg_color: null,
+    company_sidebar_active_text_color: null,
+    company_platform_background_color: null,
+    role_name: "Usuario TDP",
+    permissions: [],
+  };
+}
+
 export async function getCurrentProfile(): Promise<CurrentProfile | null> {
   noStore();
 
@@ -87,6 +124,10 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
 
   if (userError || !user) {
     return null;
+  }
+
+  if (isTdpSite()) {
+    return buildTdpCurrentProfile(user);
   }
 
   const readProfile = async (selectClause: string) => {

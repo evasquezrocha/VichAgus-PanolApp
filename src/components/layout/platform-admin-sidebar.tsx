@@ -1,5 +1,6 @@
 "use client";
 
+import { getDefaultDashboardPath } from "@/lib/site";
 import type { AppPermission } from "@/types/permission";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -54,8 +55,8 @@ const navigationItems = [
     requiredPermissions: ["platform.access"] as AppPermission[],
   },
   {
-    href: "/dashboard",
-    label: "Dashboard",
+    href: getDefaultDashboardPath(),
+    label: "Panel",
     icon: DashboardIcon,
     requiredPermissions: ["platform.access"] as AppPermission[],
   },
@@ -122,7 +123,7 @@ export function PlatformAdminSidebar({
       <div className="space-y-2">
         {visibleItems.map((item) => {
           const isActive =
-            item.href === "/dashboard"
+            item.href === getDefaultDashboardPath()
               ? pathname === item.href
               : pathname.startsWith(item.href);
 

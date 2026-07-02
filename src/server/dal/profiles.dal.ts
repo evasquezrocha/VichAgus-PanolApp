@@ -214,6 +214,11 @@ export async function createCompanyUserForPlatformAdmin(
       email: input.email,
       password: input.password,
       email_confirm: true,
+      app_metadata: {
+        auto_create_profile: true,
+        company_id: input.company_id,
+        role_id: role.id,
+      },
       user_metadata: {
         full_name: input.full_name,
       },
@@ -229,25 +234,35 @@ export async function createCompanyUserForPlatformAdmin(
     throw new Error("Supabase did not return a created user.");
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .insert({
-      id: user.id,
-      company_id: input.company_id,
-      role_id: role.id,
-      full_name: input.full_name,
-      email: input.email,
-      role: role.slug,
-      is_active: input.is_active,
-    })
-    .select(
-      "id, company_id, role_id, full_name, email, role, is_active, created_at, updated_at",
-    )
-    .single();
+  const { error: profileError } = await admin.rpc(
+    "ensure_profile_for_auth_user",
+    {
+      p_user_id: user.id,
+      p_email: input.email,
+      p_full_name: input.full_name,
+      p_company_id: input.company_id,
+      p_role_id: role.id,
+      p_bootstrap_super_admin: false,
+      p_is_active: input.is_active,
+    },
+  );
 
   if (profileError) {
     await admin.auth.admin.deleteUser(user.id);
-    throw new Error(profileError.message);
+    throw new Error(profileError?.message ?? "Could not create profile.");
+  }
+
+  const { data: profile, error: profileFetchError } = await admin
+    .from("profiles")
+    .select(
+      "id, company_id, role_id, full_name, email, role, is_active, created_at, updated_at",
+    )
+    .eq("id", user.id)
+    .single();
+
+  if (profileFetchError || !profile) {
+    await admin.auth.admin.deleteUser(user.id);
+    throw new Error(profileFetchError?.message ?? "Could not load created profile.");
   }
 
   return profile;
@@ -340,6 +355,11 @@ export async function createCompanyUserForCompanyAdmin(
       email: input.email,
       password: input.password,
       email_confirm: true,
+      app_metadata: {
+        auto_create_profile: true,
+        company_id: currentProfile.company_id,
+        role_id: role.id,
+      },
       user_metadata: {
         full_name: input.full_name,
       },
@@ -355,25 +375,35 @@ export async function createCompanyUserForCompanyAdmin(
     throw new Error("Supabase did not return a created user.");
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .insert({
-      id: user.id,
-      company_id: currentProfile.company_id,
-      role_id: role.id,
-      full_name: input.full_name,
-      email: input.email,
-      role: role.slug,
-      is_active: input.is_active,
-    })
-    .select(
-      "id, company_id, role_id, full_name, email, role, is_active, created_at, updated_at",
-    )
-    .single();
+  const { error: profileError } = await admin.rpc(
+    "ensure_profile_for_auth_user",
+    {
+      p_user_id: user.id,
+      p_email: input.email,
+      p_full_name: input.full_name,
+      p_company_id: currentProfile.company_id,
+      p_role_id: role.id,
+      p_bootstrap_super_admin: false,
+      p_is_active: input.is_active,
+    },
+  );
 
   if (profileError) {
     await admin.auth.admin.deleteUser(user.id);
-    throw new Error(profileError.message);
+    throw new Error(profileError?.message ?? "Could not create profile.");
+  }
+
+  const { data: profile, error: profileFetchError } = await admin
+    .from("profiles")
+    .select(
+      "id, company_id, role_id, full_name, email, role, is_active, created_at, updated_at",
+    )
+    .eq("id", user.id)
+    .single();
+
+  if (profileFetchError || !profile) {
+    await admin.auth.admin.deleteUser(user.id);
+    throw new Error(profileFetchError?.message ?? "Could not load created profile.");
   }
 
   return profile;

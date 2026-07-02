@@ -226,6 +226,72 @@ export type Database = {
           },
         ];
       };
+      tdp_profile_configs: {
+        Row: {
+          user_id: string;
+          profile_code: string;
+          full_name: string;
+          description: string;
+          background_1: string;
+          use_second_background: boolean;
+          background_2: string;
+          text_color: string;
+          main_button_color: string;
+          icon_color: string;
+          widget_button_bg: string;
+          widget_button_text: string;
+          widget_button_hover: string;
+          show_save_contact: boolean;
+          contact_title: string;
+          widget_ids: string[];
+          widget_configs: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          profile_code?: string;
+          full_name?: string;
+          description?: string;
+          background_1?: string;
+          use_second_background?: boolean;
+          background_2?: string;
+          text_color?: string;
+          main_button_color?: string;
+          icon_color?: string;
+          widget_button_bg?: string;
+          widget_button_text?: string;
+          widget_button_hover?: string;
+          show_save_contact?: boolean;
+          contact_title?: string;
+          widget_ids?: string[];
+          widget_configs?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          profile_code?: string;
+          full_name?: string;
+          description?: string;
+          background_1?: string;
+          use_second_background?: boolean;
+          background_2?: string;
+          text_color?: string;
+          main_button_color?: string;
+          icon_color?: string;
+          widget_button_bg?: string;
+          widget_button_text?: string;
+          widget_button_hover?: string;
+          show_save_contact?: boolean;
+          contact_title?: string;
+          widget_ids?: string[];
+          widget_configs?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       employee_companies: {
         Row: {
           id: string;
@@ -1315,6 +1381,18 @@ export type Database = {
           p_signature_data: string;
           p_observations: string | null;
           p_items: Json;
+        };
+        Returns: string;
+      };
+      ensure_profile_for_auth_user: {
+        Args: {
+          p_bootstrap_super_admin?: boolean;
+          p_company_id?: string | null;
+          p_email: string;
+          p_full_name?: string | null;
+          p_is_active?: boolean;
+          p_role_id?: string | null;
+          p_user_id: string;
         };
         Returns: string;
       };

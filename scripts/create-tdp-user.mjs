@@ -42,15 +42,15 @@ function requiredEnv(key) {
 
 loadEnvFile(resolve(process.cwd(), ".env.local"));
 
-const email = requiredEnv("SUPER_ADMIN_EMAIL").toLowerCase();
-const password = requiredEnv("SUPER_ADMIN_PASSWORD");
-const fullName = process.env.SUPER_ADMIN_FULL_NAME ?? null;
+const email = requiredEnv("TDP_USER_EMAIL").toLowerCase();
+const password = requiredEnv("TDP_USER_PASSWORD");
+const fullName = process.env.TDP_USER_FULL_NAME ?? null;
 
 const supabaseUrl = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
 const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
 
 if (password.length < 8) {
-  throw new Error("SUPER_ADMIN_PASSWORD must be at least 8 characters long.");
+  throw new Error("TDP_USER_PASSWORD must be at least 8 characters long.");
 }
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, {
@@ -73,22 +73,6 @@ async function findUserByEmail(targetEmail) {
   return data.users.find((candidate) => candidate.email?.toLowerCase() === targetEmail) ?? null;
 }
 
-async function ensureProfile(user, roleId) {
-  const { error } = await supabase.rpc("ensure_profile_for_auth_user", {
-    p_user_id: user.id,
-    p_email: email,
-    p_full_name: fullName,
-    p_company_id: null,
-    p_role_id: roleId ?? null,
-    p_bootstrap_super_admin: true,
-    p_is_active: true,
-  });
-
-  if (error) {
-    throw new Error(`Could not create profile: ${error.message}`);
-  }
-}
-
 let user = null;
 
 const { data: createdUser, error: createUserError } =
@@ -96,13 +80,9 @@ const { data: createdUser, error: createUserError } =
     email,
     password,
     email_confirm: true,
-    app_metadata: {
-      auto_create_profile: true,
-      bootstrap_super_admin: true,
-    },
     user_metadata: {
       full_name: fullName,
-      bootstrap_super_admin: true,
+      site_variant: "tdp",
     },
   });
 
@@ -115,16 +95,13 @@ if (createUserError) {
 
   const { data: updatedUser, error: updateUserError } =
     await supabase.auth.admin.updateUserById(existingUser.id, {
-      app_metadata: {
-        ...(existingUser.app_metadata ?? {}),
-        auto_create_profile: true,
-        bootstrap_super_admin: true,
-      },
       user_metadata: {
         ...(existingUser.user_metadata ?? {}),
         full_name: fullName ?? existingUser.user_metadata?.full_name ?? null,
-        bootstrap_super_admin: true,
+        site_variant: "tdp",
       },
+      password,
+      email_confirm: true,
     });
 
   if (updateUserError) {
@@ -140,6 +117,4 @@ if (!user) {
   throw new Error("Supabase did not return a created user.");
 }
 
-await ensureProfile(user);
-
-console.log(`Super admin created: ${email}`);
+console.log(`TDP user created: ${email}`);

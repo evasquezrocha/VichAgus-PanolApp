@@ -10,6 +10,7 @@ import {
   listTransferEquipments,
   listTransferTools,
 } from "@/services/traspasos.service";
+import { getDefaultDashboardPath } from "@/lib/site";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +58,7 @@ export default async function TraspasosPage({ searchParams }: TraspasosPageProps
   const profile = await requireCurrentProfile();
 
   if (!profile.company_id) {
-    redirect("/dashboard");
+    redirect(getDefaultDashboardPath());
   }
 
   const canTransferAnyLocation =

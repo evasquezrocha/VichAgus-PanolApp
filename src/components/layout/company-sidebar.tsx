@@ -1,5 +1,6 @@
 "use client";
 
+import { getDefaultDashboardPath } from "@/lib/site";
 import type { AppPermission } from "@/types/permission";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -229,27 +230,29 @@ export function CompanySidebar({
     <nav className="space-y-2">
       {canViewDashboard ? (
         <Link
-          href="/dashboard"
+          href={getDefaultDashboardPath()}
           className={[
             isExpanded
               ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm transition"
               : "mx-auto flex h-11 w-11 items-center justify-center rounded-2xl text-sm transition",
-            pathname === "/dashboard" ? "font-semibold" : "text-current hover:bg-current/10",
+            pathname === getDefaultDashboardPath()
+              ? "font-semibold"
+              : "text-current hover:bg-current/10",
           ].join(" ")}
-          title={isExpanded ? undefined : "Dashboard"}
+          title={isExpanded ? undefined : "Panel"}
           style={
-            pathname === "/dashboard"
+            pathname === getDefaultDashboardPath()
               ? {
                   backgroundColor: activeBgColor,
                   color: activeTextColor,
                 }
               : undefined
           }
-        >
+          >
           <span className={["grid shrink-0 place-items-center rounded-xl bg-current/10", isExpanded ? "h-10 w-10" : "h-9 w-9"].join(" ")}>
             <DashboardIcon />
           </span>
-          {isExpanded ? <span className="font-semibold">Dashboard</span> : null}
+          {isExpanded ? <span className="font-semibold">Panel</span> : null}
         </Link>
       ) : null}
 

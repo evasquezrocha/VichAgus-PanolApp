@@ -10,6 +10,7 @@ import {
   updateCompanySettings,
   uploadCompanyLogo,
 } from "@/services/companies.service";
+import { getDefaultDashboardPath } from "@/lib/site";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -80,7 +81,7 @@ export async function updateCompanySettingsAction(formData: FormData) {
   }
 
   revalidatePath("/company/settings/parametros-generales");
-  revalidatePath("/dashboard");
+  revalidatePath(getDefaultDashboardPath());
   redirect(
     buildFlashPath(
       returnTo,

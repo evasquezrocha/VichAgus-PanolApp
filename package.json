@@ -14,7 +14,8 @@
     "mobile:dev": "npm --prefix apps/mobile run start",
     "mobile:android": "npm --prefix apps/mobile run android",
     "mobile:ios": "npm --prefix apps/mobile run ios",
-    "create:super-admin": "node scripts/create-super-admin.mjs"
+    "create:super-admin": "node scripts/create-super-admin.mjs",
+    "create:tdp-user": "node scripts/create-tdp-user.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1075.0",

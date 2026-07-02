@@ -1,5 +1,5 @@
 import { updateSupabaseSession } from "@/lib/supabase/proxy";
-import { getDefaultDashboardPath, isTdpSite } from "@/lib/site";
+import { getDefaultDashboardPath, getLoginPath, isTdpSite } from "@/lib/site";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -11,7 +11,7 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAllowedRoute =
     pathname === "/" ||
-    pathname.startsWith("/login") ||
+    pathname.startsWith(getLoginPath()) ||
     pathname.startsWith("/auth") ||
     pathname.startsWith("/tdp");
 
@@ -23,11 +23,15 @@ export async function proxy(request: NextRequest) {
 
   if (pathname === "/") {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
+    redirectUrl.pathname = getLoginPath();
     return NextResponse.redirect(redirectUrl);
   }
 
-  return updateSupabaseSession(request);
+  return updateSupabaseSession(request, {
+    loginPath: getLoginPath(),
+    dashboardPath: getDefaultDashboardPath(),
+    protectedPathPrefixes: ["/tdp", "/panel", "/dashboard"],
+  });
 }
 
 export const config = {

@@ -1,8 +1,18 @@
 import type { Database } from "@/types/database";
+import { getDefaultDashboardPath } from "@/lib/site";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function updateSupabaseSession(request: NextRequest) {
+type SessionProxyOptions = {
+  loginPath?: string;
+  dashboardPath?: string;
+  protectedPathPrefixes?: string[];
+};
+
+export async function updateSupabaseSession(
+  request: NextRequest,
+  options: SessionProxyOptions = {},
+) {
   let response = NextResponse.next({
     request,
   });
@@ -33,21 +43,33 @@ export async function updateSupabaseSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const loginPath = options.loginPath ?? "/login";
+  const dashboardPath = options.dashboardPath ?? getDefaultDashboardPath();
+  const protectedPathPrefixes = options.protectedPathPrefixes ?? [
+    getDefaultDashboardPath(),
+    "/dashboard",
+    "/panel",
+    "/admin",
+    "/tdp/dashboard",
+    "/tdp/panel",
+  ];
+
   const pathname = request.nextUrl.pathname;
-  const isAuthRoute = pathname.startsWith("/login");
-  const isProtectedRoute =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+  const isAuthRoute = pathname.startsWith(loginPath);
+  const isProtectedRoute = protectedPathPrefixes.some((prefix) =>
+    pathname.startsWith(prefix),
+  );
 
   if (!user && isProtectedRoute) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/login";
+    redirectUrl.pathname = loginPath;
     redirectUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(redirectUrl);
   }
 
   if (user && isAuthRoute) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/dashboard";
+    redirectUrl.pathname = dashboardPath;
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }

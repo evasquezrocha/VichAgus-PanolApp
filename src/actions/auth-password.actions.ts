@@ -1,6 +1,7 @@
 "use server";
 
 import { buildFlashPath, getActionErrorMessage } from "@/lib/flash";
+import { getLoginPath } from "@/lib/site";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -36,7 +37,7 @@ export async function changeCurrentPasswordAction(formData: FormData) {
   } catch (error) {
     redirect(
       buildFlashPath(
-        "/login",
+        getLoginPath(),
         "error",
         getActionErrorMessage(error, "No se pudo cambiar la contraseña."),
       ),
@@ -46,7 +47,7 @@ export async function changeCurrentPasswordAction(formData: FormData) {
   revalidatePath("/", "layout");
   redirect(
     buildFlashPath(
-      "/login",
+      getLoginPath(),
       "success",
       "Contraseña actualizada. Inicia sesion nuevamente.",
     ),
