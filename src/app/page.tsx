@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 const highlights = [
   "Control operativo en tiempo real",
@@ -43,11 +43,7 @@ const metrics = [
   },
 ];
 
-const steps = [
-  "Detecta lo que tienes",
-  "Ordena quien lo usa",
-  "Sigue cada movimiento",
-];
+const steps = ["Detecta lo que tienes", "Ordena quien lo usa", "Sigue cada movimiento"];
 
 export default function HomePage() {
   return (
@@ -65,24 +61,24 @@ export default function HomePage() {
         <header className="animate-fade-up flex items-center justify-between gap-4 rounded-full border border-white/80 bg-white/75 px-4 py-3 shadow-[0_20px_80px_rgba(30,58,138,0.09)] backdrop-blur-md sm:px-5">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/brand/lopva_logo_horizontal_blue.svg"
+              src="/brand/lopva_logo_posterior.png"
               alt="Lopva"
-              width={180}
-              height={52}
+              width={1024}
+              height={399}
               priority
-              className="h-10 w-auto sm:h-11"
+              className="h-16 w-auto sm:h-20 lg:h-24"
             />
           </Link>
 
           <nav className="hidden items-center gap-8 font-[family-name:var(--font-manrope)] text-sm font-medium text-slate-600 md:flex">
-            <a href="#solucion" className="transition hover:text-accent">
-              Solucion
+            <a href="#plataforma-gestion" className="transition hover:text-accent">
+              Plataforma de Gestión
             </a>
-            <a href="#capacidades" className="transition hover:text-accent">
-              Capacidades
+            <a href="#tarjeta-presentacion-digital" className="transition hover:text-accent">
+              Tarjeta de Presentación Digital
             </a>
-            <a href="#plataforma" className="transition hover:text-accent">
-              Plataforma
+            <a href="#plataforma-tdp" className="transition hover:text-accent">
+              Plataforma TPD
             </a>
           </nav>
 
@@ -96,8 +92,8 @@ export default function HomePage() {
 
         <section className="grid flex-1 items-center gap-12 pb-10 pt-14 lg:grid-cols-[1.02fr_0.98fr] lg:pt-20">
           <div className="animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-4 py-2 font-[family-name:var(--font-manrope)] text-xs font-semibold uppercase tracking-[0.3em] text-accent shadow-sm backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-cyan-500" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-4 py-2 font-[family-name:var(--font-manrope)] text-xs font-semibold uppercase tracking-[0.3em] text-accent shadow-sm backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-cyan-500" />
               Software solutions
             </div>
 
@@ -131,10 +127,10 @@ export default function HomePage() {
                 Entrar a la plataforma
               </Link>
               <a
-                href="#capacidades"
+                href="#plataforma-gestion"
                 className="inline-flex items-center justify-center rounded-full border border-line bg-white/80 px-7 py-3.5 text-center font-[family-name:var(--font-sora)] font-semibold text-slate-800 transition hover:bg-slate-50"
               >
-                Ver capacidades
+                Ver gestión
               </a>
             </div>
 
@@ -164,7 +160,7 @@ export default function HomePage() {
             <div className="absolute -right-4 bottom-12 h-32 w-32 rounded-full bg-blue-600/15 blur-3xl animate-drift" />
 
             <div
-              id="plataforma"
+              id="plataforma-tdp"
               className="relative overflow-hidden rounded-[2rem] border border-blue-100 bg-slate-900 p-5 text-white shadow-[0_30px_120px_rgba(30,58,138,0.28)] animate-float"
             >
               <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(37,99,235,0.22),transparent_42%,rgba(6,182,212,0.18))]" />
@@ -181,11 +177,11 @@ export default function HomePage() {
                   </div>
                   <div>
                     <Image
-                      src="/brand/lopva_logo_horizontal_dark.svg"
+                      src="/brand/lopva_logo_posterior.png"
                       alt="Lopva software solutions"
-                      width={220}
-                      height={54}
-                      className="h-10 w-auto brightness-0 invert"
+                      width={1024}
+                      height={399}
+                      className="h-16 w-auto sm:h-20 lg:h-24"
                     />
                   </div>
                 </div>
@@ -275,7 +271,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="grid gap-4 border-t border-blue-100 pt-10 md:grid-cols-3">
+        <section
+          id="plataforma-gestion"
+          className="grid gap-4 border-t border-blue-100 pt-10 md:grid-cols-3"
+        >
           {pillars.map((pillar, index) => (
             <article
               key={pillar.title}
@@ -317,6 +316,68 @@ export default function HomePage() {
                 </p>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section
+          id="tarjeta-presentacion-digital"
+          className="mt-10 overflow-hidden rounded-[2rem] border border-blue-100 bg-slate-900 text-white shadow-[0_30px_120px_rgba(30,58,138,0.18)]"
+        >
+          <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="p-8 sm:p-10">
+              <p className="font-[family-name:var(--font-sora)] text-sm font-semibold uppercase tracking-[0.3em] text-cyan-300">
+                Tarjeta de Presentación Digital
+              </p>
+              <h2 className="mt-4 max-w-xl font-[family-name:var(--font-montserrat)] text-3xl font-semibold tracking-tight sm:text-4xl">
+                Una forma rápida de presentar Lopva y llevar a cada contacto al login.
+              </h2>
+              <p className="mt-5 max-w-xl font-[family-name:var(--font-inter)] text-base leading-7 text-white/76">
+                El menú público ahora incluye esta entrada para que la primera vista
+                funcione como una tarjeta digital: marca, propuesta de valor y acceso
+                directo a la plataforma.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 font-[family-name:var(--font-sora)] text-sm font-semibold text-slate-900 transition hover:bg-cyan-50"
+                >
+                  Ir al login
+                </Link>
+                <a
+                  href="#plataforma-tdp"
+                  className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-6 py-3 font-[family-name:var(--font-sora)] text-sm font-semibold text-white transition hover:bg-white/15"
+                >
+                  Ver Plataforma TPD
+                </a>
+              </div>
+            </div>
+            <div className="border-t border-white/10 bg-[linear-gradient(135deg,rgba(37,99,235,0.3),rgba(6,182,212,0.18))] p-8 sm:p-10 lg:border-l lg:border-t-0">
+              <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/60 p-6 backdrop-blur">
+                <p className="font-[family-name:var(--font-sora)] text-xs font-semibold uppercase tracking-[0.25em] text-white/60">
+                  Acceso
+                </p>
+                <div className="mt-4 flex items-center gap-3">
+                  <Image
+                    src="/brand/lopva_symbol_hex_transparent.svg"
+                    alt="Lopva symbol"
+                    width={64}
+                    height={64}
+                    className="h-16 w-16"
+                  />
+                  <Image
+                    src="/brand/lopva_logo_posterior.png"
+                    alt="Lopva"
+                    width={1024}
+                    height={399}
+                    className="h-16 w-auto sm:h-20"
+                  />
+                </div>
+                <p className="mt-5 font-[family-name:var(--font-inter)] text-sm leading-6 text-white/70">
+                  Menú público, branding oficial y acceso directo a la plataforma en
+                  una sola pieza.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       </div>

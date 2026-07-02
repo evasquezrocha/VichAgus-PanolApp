@@ -29,12 +29,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.35),_transparent_35%),radial-gradient(circle_at_80%_20%,_rgba(6,182,212,0.22),_transparent_25%),linear-gradient(135deg,_rgba(30,58,138,0.95),_rgba(15,23,42,0.98))]" />
           <div className="relative flex h-full flex-col justify-between">
             <Image
-              src="/brand/lopva_logo_horizontal_dark.svg"
+              src="/brand/lopva_logo_primary.svg"
               alt="Lopva"
-              width={240}
-              height={58}
+              width={320}
+              height={384}
               priority
-              className="h-11 w-auto brightness-0 invert"
+              className="h-16 w-auto"
             />
 
             <div className="max-w-xl">
@@ -76,11 +76,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="mb-4 flex items-center justify-between lg:hidden">
               <Link href="/" className="inline-flex items-center gap-3">
                 <Image
-                  src="/brand/lopva_logo_horizontal_blue.svg"
+                  src="/brand/lopva_logo_primary.svg"
                   alt="Lopva"
-                  width={180}
-                  height={52}
-                  className="h-10 w-auto"
+                  width={260}
+                  height={312}
+                  className="h-14 w-auto"
                 />
               </Link>
               <Link
