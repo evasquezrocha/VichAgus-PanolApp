@@ -12,28 +12,6 @@ type PublicWidgetActionProps = {
   icon: ReactNode;
 };
 
-function ActionIconButton({
-  children,
-  onClick,
-  label,
-}: {
-  children: ReactNode;
-  onClick: () => void;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-full border border-[#3a3428] bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-      aria-label={label}
-    >
-      {children}
-      <span>{label}</span>
-    </button>
-  );
-}
-
 export function PublicWidgetAction({
   label,
   href,
@@ -63,9 +41,6 @@ export function PublicWidgetAction({
       </div>
       <div className="min-w-0 flex-1 text-left">
         <div className="text-[1.05rem] font-bold leading-tight text-white">{label}</div>
-        {subtitle ? (
-          <div className="mt-1 text-sm text-white/60">{subtitle}</div>
-        ) : null}
       </div>
       {href ? (
         <svg
@@ -96,23 +71,25 @@ export function PublicWidgetAction({
     );
   }
 
+  if (copyText) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          void copyToClipboard();
+        }}
+        className="w-full rounded-[1.15rem] border border-[#3a3428] bg-[#171717] px-5 py-4 text-left shadow-[0_10px_24px_rgba(0,0,0,0.2)] transition hover:border-[#4a4336] hover:bg-[#1c1c1c]"
+        aria-label={`${label}: copiar datos`}
+        title={`${label}: copiar datos`}
+      >
+        <div className="flex items-center gap-4">{content}</div>
+      </button>
+    );
+  }
+
   return (
     <article className="rounded-[1.15rem] border border-[#3a3428] bg-[#171717] px-5 py-4 shadow-[0_10px_24px_rgba(0,0,0,0.2)]">
       <div className="flex items-center gap-4">{content}</div>
-      {copyText ? (
-        <div className="mt-4 flex flex-wrap gap-3">
-          <ActionIconButton
-            label={copied ? "Copiado" : "Copiar datos"}
-            onClick={() => {
-              void copyToClipboard();
-            }}
-          >
-            <span className="text-xs uppercase tracking-[0.2em]">
-              {copied ? "OK" : "Copiar"}
-            </span>
-          </ActionIconButton>
-        </div>
-      ) : null}
     </article>
   );
 }

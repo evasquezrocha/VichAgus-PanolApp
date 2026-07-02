@@ -42,6 +42,13 @@ function getMailTo(email: string, subject: string) {
   return `mailto:${email}${params}`;
 }
 
+function getStorageProxyUrl(storagePath: string) {
+  return `/api/tdp/storage/${storagePath
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/")}`;
+}
+
 function WidgetGlyph({ widgetId }: { widgetId: TdpWidgetId }) {
   const iconProps = {
     className: "h-5 w-5",
@@ -164,13 +171,13 @@ export default async function TdpPublicProfilePage({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#363d4a_0%,_#232833_42%,_#171b23_100%)] px-4 py-5 text-white sm:px-6 lg:px-10">
-      <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4">
-        <section className="rounded-[1.8rem] border border-[#3d392d] bg-[#151515] px-5 py-5 shadow-[0_18px_50px_rgba(0,0,0,0.42)]">
-          <div className="mx-auto max-w-[360px]">
-            <div
-              className="flex min-h-[300px] flex-col items-center rounded-[1.9rem] border border-[#25221b] px-6 pb-8 pt-5 text-center shadow-[0_12px_24px_rgba(0,0,0,0.22)]"
-              style={{ background: previewBackground, color: profile.text_color }}
-            >
+      <div className="mx-auto flex w-full max-w-[430px] flex-col">
+        <section className="rounded-[1.95rem] border border-[#3d392d] bg-[#151515] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.42)]">
+          <div
+            className="rounded-[1.65rem] border border-[#25221b] px-5 pb-5 pt-5"
+            style={{ background: previewBackground, color: profile.text_color }}
+          >
+            <div className="flex flex-col items-center text-center">
               {profile.widget_configs.photo?.file_url ? (
                 <img
                   src={profile.widget_configs.photo.file_url}
@@ -193,200 +200,165 @@ export default async function TdpPublicProfilePage({
                   Guardar contacto
                 </a>
               ) : null}
-              <div className="mt-8 text-[0.72rem] text-white/45">Powered by: lopva.cl</div>
             </div>
-          </div>
-        </section>
 
-        <section
-          id="widgets"
-          className="rounded-[1.8rem] border border-[#3d392d] bg-[#151515] p-4 text-white shadow-[0_18px_50px_rgba(0,0,0,0.42)]"
-        >
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-1">
-            <div className="text-center">
-              <h1 className="text-[1.55rem] font-extrabold tracking-tight text-white">
-                {profile.full_name || "Perfil digital"}
-              </h1>
-              <p className="mt-1 text-sm text-white/55">
-                {profile.description || "Tarjeta digital publica"}
-              </p>
-            </div>
-            <a
-              href={publicUrl}
-              className="rounded-full border border-[#3a3428] bg-[#1c1c1c] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/55"
-            >
-              {profile.profile_code}
-            </a>
-          </div>
+            <div id="widgets" className="mt-5 grid gap-3">
+              {selectedWidgets.length > 0 ? (
+                selectedWidgets.map((entry) => {
+                  const widgetId = entry.id;
+                  const widget = entry.config as Record<string, string | null>;
 
-          <div className="grid gap-3">
-            {selectedWidgets.length > 0 ? (
-              selectedWidgets.map((entry) => {
-                const widgetId = entry.id;
-                const widget = entry.config as Record<string, string | null>;
+                  switch (widgetId) {
+                    case "photo":
+                      return null;
+                    case "whatsapp":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label="WhatsApp"
+                          href={getWhatsappUrl(
+                            String(widget.country_code ?? "+56"),
+                            String(widget.number ?? ""),
+                            String(widget.message ?? ""),
+                          )}
+                          toneClassName="from-emerald-500 to-emerald-400"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "phone":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label="Teléfono"
+                          href={getTelUrl(
+                            String(widget.country_code ?? "+56"),
+                            String(widget.number ?? ""),
+                          )}
+                          toneClassName="from-emerald-500 to-emerald-400"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "email":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label="Email"
+                          href={getMailTo(
+                            String(widget.email ?? ""),
+                            String(widget.subject ?? ""),
+                          )}
+                          toneClassName="from-rose-500 to-orange-500"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "instagram":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label="Instagram"
+                          href={normalizePublicUrl(
+                            `https://instagram.com/${String(widget.username ?? "").replace(/^@/, "")}`,
+                          )}
+                          toneClassName="from-fuchsia-500 to-violet-500"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "linkedin":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label="LinkedIn"
+                          href={normalizePublicUrl(String(widget.url ?? ""))}
+                          toneClassName="from-blue-500 to-sky-500"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "website":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label="Sitio Web"
+                          href={normalizePublicUrl(String(widget.url ?? ""))}
+                          toneClassName="from-blue-500 to-sky-500"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "location":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label={widget.title || "Ubicación"}
+                          href={normalizePublicUrl(String(widget.maps_url ?? ""))}
+                          toneClassName="from-rose-500 to-orange-500"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "transfer": {
+                      const copyText = [
+                        widget.company_name,
+                        widget.rut,
+                        widget.bank,
+                        widget.account_type,
+                        widget.account_number,
+                        widget.confirmation_email,
+                      ]
+                        .filter(Boolean)
+                        .join(" | ");
 
-                switch (widgetId) {
-                  case "photo":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label="Foto/Logo"
-                        href={widget.file_url ?? undefined}
-                        subtitle={widget.file_name || "Abrir imagen publicada"}
-                        toneClassName="from-emerald-500 to-emerald-400"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "whatsapp":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label="WhatsApp"
-                        href={getWhatsappUrl(
-                          String(widget.country_code ?? "+56"),
-                          String(widget.number ?? ""),
-                          String(widget.message ?? ""),
-                        )}
-                        subtitle={`${widget.country_code ?? "+56"} ${widget.number ?? ""}`.trim()}
-                        toneClassName="from-emerald-500 to-emerald-400"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "phone":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label={`Teléfono: ${String(widget.number ?? "")}`.trim()}
-                        href={getTelUrl(
-                          String(widget.country_code ?? "+56"),
-                          String(widget.number ?? ""),
-                        )}
-                        subtitle={`${widget.country_code ?? "+56"} ${widget.number ?? ""}`.trim()}
-                        toneClassName="from-emerald-500 to-emerald-400"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "email":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label={`Email: ${String(widget.email ?? "")}`.trim()}
-                        href={getMailTo(
-                          String(widget.email ?? ""),
-                          String(widget.subject ?? ""),
-                        )}
-                        subtitle={widget.email ?? ""}
-                        toneClassName="from-rose-500 to-orange-500"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "instagram":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label="Instagram"
-                        href={normalizePublicUrl(
-                          `https://instagram.com/${String(widget.username ?? "").replace(/^@/, "")}`,
-                        )}
-                        subtitle={widget.username ?? ""}
-                        toneClassName="from-fuchsia-500 to-violet-500"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "linkedin":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label="LinkedIn"
-                        href={normalizePublicUrl(String(widget.url ?? ""))}
-                        subtitle={widget.url ?? ""}
-                        toneClassName="from-blue-500 to-sky-500"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "website":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label="Sitio Web"
-                        href={normalizePublicUrl(String(widget.url ?? ""))}
-                        subtitle={widget.url ?? ""}
-                        toneClassName="from-blue-500 to-sky-500"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "location":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label={widget.title || "Ubicación"}
-                        href={normalizePublicUrl(String(widget.maps_url ?? ""))}
-                        subtitle={widget.address || widget.maps_url || "Ver mapa"}
-                        toneClassName="from-rose-500 to-orange-500"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "transfer": {
-                    const copyText = [
-                      widget.company_name,
-                      widget.rut,
-                      widget.bank,
-                      widget.account_type,
-                      widget.account_number,
-                      widget.confirmation_email,
-                    ]
-                      .filter(Boolean)
-                      .join(" | ");
-
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label="Transferencia"
-                        copyText={copyText}
-                        subtitle={
-                          widget.company_name ||
-                          widget.bank ||
-                          widget.account_number ||
-                          "Copiar datos bancarios"
-                        }
-                        toneClassName="from-fuchsia-500 to-violet-500"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label="Transferencia"
+                          copyText={copyText}
+                          toneClassName="from-fuchsia-500 to-violet-500"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    }
+                    case "pdf":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label={widget.title || "PDF/Documento"}
+                          href={
+                            widget.storage_path
+                              ? getStorageProxyUrl(widget.storage_path)
+                              : widget.file_url ?? undefined
+                          }
+                          toneClassName="from-rose-500 to-orange-500"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    case "custom":
+                      return (
+                        <PublicWidgetAction
+                          key={widgetId}
+                          label={widget.label || "Enlace personalizado"}
+                          href={normalizePublicUrl(String(widget.url ?? ""))}
+                          toneClassName="from-zinc-500 to-zinc-400"
+                          icon={<WidgetGlyph widgetId={widgetId} />}
+                        />
+                      );
+                    default:
+                      return null;
                   }
-                  case "pdf":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label={widget.title || "PDF/Documento"}
-                        href={widget.file_url ?? undefined}
-                        subtitle={widget.description || widget.file_name || "Abrir archivo"}
-                        toneClassName="from-rose-500 to-orange-500"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  case "custom":
-                    return (
-                      <PublicWidgetAction
-                        key={widgetId}
-                        label={widget.label || "Enlace personalizado"}
-                        href={normalizePublicUrl(String(widget.url ?? ""))}
-                        subtitle={widget.url ?? ""}
-                        toneClassName="from-zinc-500 to-zinc-400"
-                        icon={<WidgetGlyph widgetId={widgetId} />}
-                      />
-                    );
-                  default:
-                    return null;
-                }
-              })
-            ) : (
-              <div className="rounded-[1.15rem] border border-dashed border-[#3a3428] bg-[#171717] p-6 text-sm text-white/55">
-                Este perfil no tiene widgets publicados todavia.
-              </div>
-            )}
+                })
+              ) : (
+                <div className="rounded-[1.15rem] border border-dashed border-[#3a3428] bg-[#171717] p-6 text-sm text-white/55">
+                  Este perfil no tiene widgets publicados todavia.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-7 flex flex-col items-center gap-2 text-center">
+              <div className="text-[0.72rem] text-white/45">Powered by: lopva.cl</div>
+            </div>
           </div>
         </section>
+
+        <a href={publicUrl} className="sr-only">
+          {profile.profile_code}
+        </a>
       </div>
     </main>
   );

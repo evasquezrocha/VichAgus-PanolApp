@@ -91,6 +91,24 @@ export default async function TdpPanelPage() {
                   ) : null}
                   <div>Usuario: {profile.email}</div>
                 </div>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link
+                    href="/tdp/panel/perfil"
+                    className="inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-strong"
+                  >
+                    Editar perfil público
+                  </Link>
+                  {publicUrl ? (
+                    <Link
+                      href={publicUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Ver perfil público
+                    </Link>
+                  ) : null}
+                </div>
               </article>
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-slate-600">

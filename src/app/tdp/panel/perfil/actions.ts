@@ -16,6 +16,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { randomBytes } from "node:crypto";
+import { buildStorageProxyUrl } from "@/lib/storage";
 
 const widgetIdSchema = z.enum(TDP_WIDGET_IDS);
 
@@ -97,12 +98,12 @@ export async function saveTdpProfileConfigAction(formData: FormData) {
       nextWidgetConfigs.photo = {
         ...createDefaultTdpWidgetConfig("photo"),
         file_name: photoFile.name,
-        file_url: uploadedPhoto.url,
+        file_url: buildStorageProxyUrl(uploadedPhoto.path),
         storage_path: uploadedPhoto.path,
       };
 
       if (previousPhoto?.storage_path && previousPhoto.storage_path !== uploadedPhoto.path) {
-        await deleteFileFromStorage(previousPhoto.storage_path);
+        await deleteFileFromStorage(previousPhoto.storage_path).catch(() => undefined);
       }
     }
 
@@ -117,14 +118,14 @@ export async function saveTdpProfileConfigAction(formData: FormData) {
       nextWidgetConfigs.pdf = {
         ...createDefaultTdpWidgetConfig("pdf"),
         file_name: pdfFile.name,
-        file_url: uploadedPdf.url,
+        file_url: buildStorageProxyUrl(uploadedPdf.path),
         storage_path: uploadedPdf.path,
         title: previousPdf?.title ?? "Documento adjunto",
         description: previousPdf?.description ?? "",
       };
 
       if (previousPdf?.storage_path && previousPdf.storage_path !== uploadedPdf.path) {
-        await deleteFileFromStorage(previousPdf.storage_path);
+        await deleteFileFromStorage(previousPdf.storage_path).catch(() => undefined);
       }
     }
 

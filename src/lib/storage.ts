@@ -1,6 +1,11 @@
 import "server-only";
 
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { randomUUID } from "node:crypto";
 import { getRequiredEnv } from "@/lib/env";
 
@@ -71,6 +76,10 @@ function getR2Client() {
   return r2Client;
 }
 
+function getR2BucketName() {
+  return getRequiredEnv("R2_BUCKET_NAME").trim().toLowerCase();
+}
+
 function buildR2PublicUrl(objectKey: string) {
   const baseUrl = new URL(getRequiredEnv("R2_PUBLIC_BASE_URL"));
   const encodedKey = objectKey
@@ -85,7 +94,7 @@ function buildR2PublicUrl(objectKey: string) {
 }
 
 async function uploadFileToR2(file: File, folderPath: string): Promise<UploadResult> {
-  const bucketName = getRequiredEnv("R2_BUCKET_NAME");
+  const bucketName = getR2BucketName();
   const objectKey = buildStoragePath(folderPath, file.name);
 
   await getR2Client().send(
@@ -109,12 +118,35 @@ export async function uploadFileToStorage(file: File, folderPath: string) {
   return uploadFileToR2(file, folderPath);
 }
 
+export function buildStorageProxyUrl(
+  objectKey: string,
+  routeBase = "/api/tdp/storage",
+) {
+  const encodedKey = objectKey
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `${routeBase.replace(/\/$/, "")}/${encodedKey}`;
+}
+
+export async function getStorageObject(objectKey: string) {
+  assertR2Configured();
+
+  return getR2Client().send(
+    new GetObjectCommand({
+      Bucket: getR2BucketName(),
+      Key: objectKey,
+    }),
+  );
+}
+
 export async function deleteFileFromStorage(objectKey: string) {
   assertR2Configured();
 
   await getR2Client().send(
     new DeleteObjectCommand({
-      Bucket: getRequiredEnv("R2_BUCKET_NAME"),
+      Bucket: getR2BucketName(),
       Key: objectKey,
     }),
   );
