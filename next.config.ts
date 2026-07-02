@@ -39,6 +39,21 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
   },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "www.tdp.lopva.cl",
+          },
+        ],
+        destination: "https://tdp.lopva.cl/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

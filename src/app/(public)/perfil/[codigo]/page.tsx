@@ -295,15 +295,15 @@ export default async function TdpPublicProfilePage({
                       );
                     case "transfer": {
                       const copyText = [
-                        widget.company_name,
-                        widget.rut,
-                        widget.bank,
-                        widget.account_type,
-                        widget.account_number,
-                        widget.confirmation_email,
+                        widget.company_name ? `Nombre: ${widget.company_name}` : null,
+                        widget.rut ? `RUT: ${widget.rut}` : null,
+                        widget.bank ? `Banco: ${widget.bank}` : null,
+                        widget.account_type ? `Tipo cuenta: ${widget.account_type}` : null,
+                        widget.account_number ? `Numero cuenta: ${widget.account_number}` : null,
+                        widget.confirmation_email ? `Email: ${widget.confirmation_email}` : null,
                       ]
                         .filter(Boolean)
-                        .join(" | ");
+                        .join("\n");
 
                       return (
                         <PublicWidgetAction

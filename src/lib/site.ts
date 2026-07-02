@@ -40,8 +40,26 @@ export function getLoginPath() {
   return "/login";
 }
 
+function normalizeCanonicalUrl(value: string, fallback: string) {
+  try {
+    const url = new URL(value.trim());
+    if (url.hostname.startsWith("www.")) {
+      url.hostname = url.hostname.slice(4);
+    }
+    url.hash = "";
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return fallback;
+  }
+}
+
 export function getTdpPublicProfileBaseUrl() {
-  return process.env.NEXT_PUBLIC_TDP_PUBLIC_URL?.trim() || "https://tdp.lopva.cl";
+  const configuredUrl = process.env.NEXT_PUBLIC_TDP_PUBLIC_URL?.trim();
+  if (!configuredUrl) {
+    return "https://tdp.lopva.cl";
+  }
+
+  return normalizeCanonicalUrl(configuredUrl, "https://tdp.lopva.cl");
 }
 
 function envAsset(key: string, fallback: string) {

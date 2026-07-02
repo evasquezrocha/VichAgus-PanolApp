@@ -83,6 +83,11 @@ export function PublicWidgetAction({
         title={`${label}: copiar datos`}
       >
         <div className="flex items-center gap-4">{content}</div>
+        {copied ? (
+          <div className="mt-3 text-sm font-semibold text-emerald-300">
+            Datos copiados
+          </div>
+        ) : null}
       </button>
     );
   }
