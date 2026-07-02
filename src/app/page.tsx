@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-import { getSiteConfig } from "@/lib/site";
+import { getSiteConfig, isTdpSite } from "@/lib/site";
 
 const site = getSiteConfig();
 
@@ -50,6 +51,10 @@ const metrics = [
 const steps = ["Detecta lo que tienes", "Ordena quién lo usa", "Sigue cada movimiento"];
 
 export default function HomePage() {
+  if (isTdpSite()) {
+    redirect("/login");
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div
@@ -331,12 +336,12 @@ export default function HomePage() {
                 Tarjeta de Presentación Digital
               </p>
               <h2 className="mt-4 max-w-xl font-[family-name:var(--font-montserrat)] text-3xl font-semibold tracking-tight sm:text-4xl">
-                {site.variant === "tdp"
+                {isTdpSite()
                   ? "Una base visual única para TDP, con acceso y datos separados del producto principal."
                   : "Una forma rápida de presentar Lopva y llevar a cada contacto al login."}
               </h2>
               <p className="mt-5 max-w-xl font-[family-name:var(--font-inter)] text-base leading-7 text-white/76">
-                {site.variant === "tdp"
+                {isTdpSite()
                   ? "El mismo formato visual se mantiene, pero la configuración, las variables y el despliegue son independientes."
                   : "El menú público ahora incluye esta entrada para que la primera vista funcione como una tarjeta digital: marca, propuesta de valor y acceso directo a la plataforma."}
               </p>

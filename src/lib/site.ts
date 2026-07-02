@@ -28,6 +28,14 @@ export type SiteConfig = {
 
 const variant = (process.env.NEXT_PUBLIC_SITE_VARIANT as SiteVariant | undefined) ?? "app";
 
+export function isTdpSite() {
+  return variant === "tdp";
+}
+
+export function getDefaultDashboardPath() {
+  return isTdpSite() ? "/tdp/dashboard" : "/dashboard";
+}
+
 function envAsset(key: string, fallback: string) {
   return process.env[key] ?? fallback;
 }
@@ -87,5 +95,5 @@ const tdpConfig: SiteConfig = {
 };
 
 export function getSiteConfig(): SiteConfig {
-  return variant === "tdp" ? tdpConfig : appConfig;
+  return isTdpSite() ? tdpConfig : appConfig;
 }

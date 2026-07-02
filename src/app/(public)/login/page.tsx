@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FlashBanner } from "@/components/ui/flash-banner";
 import { signInWithPasswordAction } from "@/actions/auth.actions";
 import { getFlashMessage } from "@/lib/flash";
-import { getSiteConfig } from "@/lib/site";
+import { getDefaultDashboardPath, getSiteConfig } from "@/lib/site";
 
 type LoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -18,7 +18,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const next =
     typeof params.next === "string" && params.next.startsWith("/")
       ? params.next
-      : "/dashboard";
+      : getDefaultDashboardPath();
 
   return (
     <main className="relative min-h-screen bg-background text-foreground">
