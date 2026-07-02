@@ -4,10 +4,13 @@ import Link from "next/link";
 import { FlashBanner } from "@/components/ui/flash-banner";
 import { signInWithPasswordAction } from "@/actions/auth.actions";
 import { getFlashMessage } from "@/lib/flash";
+import { getSiteConfig } from "@/lib/site";
 
 type LoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+const site = getSiteConfig();
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
@@ -29,8 +32,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.35),_transparent_35%),radial-gradient(circle_at_80%_20%,_rgba(6,182,212,0.22),_transparent_25%),linear-gradient(135deg,_rgba(30,58,138,0.95),_rgba(15,23,42,0.98))]" />
           <div className="relative flex h-full flex-col justify-between">
             <Image
-              src="/brand/lopva_logo_primary.svg"
-              alt="Lopva"
+              src={site.assets.logoCompact}
+              alt={site.brandName}
               width={320}
               height={384}
               priority
@@ -39,14 +42,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
             <div className="max-w-xl">
               <p className="font-[family-name:var(--font-sora)] text-sm font-semibold uppercase tracking-[0.3em] text-white/70">
-                Acceso seguro
+                {site.login.helperTitle}
               </p>
               <h1 className="mt-4 font-[family-name:var(--font-montserrat)] text-5xl font-semibold tracking-tight">
-                Entra a la plataforma y retoma el control de tu operacion.
+                {site.login.title}
               </h1>
               <p className="mt-6 font-[family-name:var(--font-inter)] text-lg leading-8 text-white/78">
-                Una sola puerta de entrada para gestionar empresas, roles, activos y
-                trazabilidad con una interfaz clara y consistente.
+                {site.login.description}
               </p>
             </div>
 
@@ -56,7 +58,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   Seguridad
                 </p>
                 <p className="mt-3 font-[family-name:var(--font-inter)] text-base leading-7 text-white/82">
-                  Cada usuario entra a su contexto de trabajo sin mezclar datos.
+                  {site.login.helperDescription}
                 </p>
               </div>
               <div className="rounded-[1.5rem] border border-white/10 bg-white/10 p-5 backdrop-blur">
@@ -64,7 +66,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   Enfoque
                 </p>
                 <p className="mt-3 font-[family-name:var(--font-inter)] text-base leading-7 text-white/82">
-                  Flujo rapido, simple y preparado para uso en escritorio o campo.
+                  Flujo rápido, simple y preparado para uso en escritorio o campo.
                 </p>
               </div>
             </div>
@@ -76,8 +78,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="mb-4 flex items-center justify-between lg:hidden">
               <Link href="/" className="inline-flex items-center gap-3">
                 <Image
-                  src="/brand/lopva_logo_primary.svg"
-                  alt="Lopva"
+                  src={site.assets.logoCompact}
+                  alt={site.brandName}
                   width={260}
                   height={312}
                   className="h-14 w-auto"
@@ -104,7 +106,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     Acceso
                   </p>
                   <h1 className="mt-3 font-[family-name:var(--font-montserrat)] text-3xl font-semibold tracking-tight text-slate-900">
-                    Iniciar sesion
+                    {site.login.title}
                   </h1>
                 </div>
                 <Link
@@ -131,7 +133,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 </label>
                 <label className="block">
                   <span className="font-[family-name:var(--font-manrope)] text-sm font-medium text-slate-700">
-                    Password
+                    Contraseña
                   </span>
                   <input
                     className="mt-2 w-full rounded-2xl border border-blue-100 bg-white px-4 py-3.5 font-[family-name:var(--font-inter)] outline-none ring-accent/20 transition placeholder:text-slate-400 focus:ring-4"

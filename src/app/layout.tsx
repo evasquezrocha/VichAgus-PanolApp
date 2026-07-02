@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Manrope, Montserrat, Poppins, Sora } from "next/font/google";
 import "./globals.css";
 
+import { getSiteConfig } from "@/lib/site";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -28,9 +30,11 @@ const manrope = Manrope({
   subsets: ["latin"],
 });
 
+const site = getSiteConfig();
+
 export const metadata: Metadata = {
-  title: "Lopva",
-  description: "Base SaaS B2B multiempresa",
+  title: site.siteTitle,
+  description: site.siteDescription,
 };
 
 export default function RootLayout({

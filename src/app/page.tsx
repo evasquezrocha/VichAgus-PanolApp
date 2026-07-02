@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { getSiteConfig } from "@/lib/site";
+
+const site = getSiteConfig();
+
 const highlights = [
   "Control operativo en tiempo real",
   "Acceso por empresa, roles y permisos",
-  "Datos listos para web y app movil",
+  "Datos listos para web y app móvil",
 ];
 
 const pillars = [
@@ -28,7 +32,7 @@ const pillars = [
 const metrics = [
   {
     value: "1",
-    label: "entrada publica",
+    label: "entrada pública",
     detail: "Una sola vista clara para descubrir la plataforma",
   },
   {
@@ -39,11 +43,11 @@ const metrics = [
   {
     value: "100%",
     label: "web-first",
-    detail: "Disenada para escritorio y movil desde el inicio",
+    detail: "Diseñada para escritorio y móvil desde el inicio",
   },
 ];
 
-const steps = ["Detecta lo que tienes", "Ordena quien lo usa", "Sigue cada movimiento"];
+const steps = ["Detecta lo que tienes", "Ordena quién lo usa", "Sigue cada movimiento"];
 
 export default function HomePage() {
   return (
@@ -61,8 +65,8 @@ export default function HomePage() {
         <header className="animate-fade-up flex items-center justify-between gap-4 rounded-full border border-white/80 bg-white/75 px-4 py-3 shadow-[0_20px_80px_rgba(30,58,138,0.09)] backdrop-blur-md sm:px-5">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/brand/lopva_logo_posterior.png"
-              alt="Lopva"
+              src={site.assets.logoHeader}
+              alt={site.brandName}
               width={1024}
               height={399}
               priority
@@ -86,7 +90,7 @@ export default function HomePage() {
             href="/login"
             className="inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 font-[family-name:var(--font-sora)] text-sm font-semibold text-white transition hover:bg-accent-strong"
           >
-            Login
+            Acceder
           </Link>
         </header>
 
@@ -94,17 +98,15 @@ export default function HomePage() {
           <div className="animate-fade-up">
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-4 py-2 font-[family-name:var(--font-manrope)] text-xs font-semibold uppercase tracking-[0.3em] text-accent shadow-sm backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-cyan-500" />
-              Software solutions
+              {site.home.badge}
             </div>
 
             <h1 className="mt-7 max-w-4xl font-[family-name:var(--font-montserrat)] text-5xl font-semibold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
-              Gestiona tu operacion con una plataforma clara, rapida y lista para crecer.
+              {site.home.headline}
             </h1>
 
             <p className="mt-6 max-w-2xl font-[family-name:var(--font-inter)] text-lg leading-8 text-slate-600 sm:text-xl">
-              Lopva organiza activos, herramientas, usuarios y trazabilidad en un
-              entorno multiempresa pensado para trabajo real. Una primera vista
-              mas premium, mas tecnologica y mas cercana a la identidad real de la marca.
+              {site.home.description}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -124,13 +126,13 @@ export default function HomePage() {
                 href="/login"
                 className="inline-flex items-center justify-center rounded-full bg-accent px-7 py-3.5 text-center font-[family-name:var(--font-sora)] font-semibold text-white transition hover:bg-accent-strong"
               >
-                Entrar a la plataforma
+                {site.home.ctaPrimary}
               </Link>
               <a
                 href="#plataforma-gestion"
                 className="inline-flex items-center justify-center rounded-full border border-line bg-white/80 px-7 py-3.5 text-center font-[family-name:var(--font-sora)] font-semibold text-slate-800 transition hover:bg-slate-50"
               >
-                Ver gestión
+                {site.home.ctaSecondary}
               </a>
             </div>
 
@@ -168,8 +170,8 @@ export default function HomePage() {
                 <div className="flex items-center gap-3">
                   <div className="rounded-2xl border border-white/10 bg-white/10 p-2 shadow-lg shadow-black/15">
                     <Image
-                      src="/brand/lopva_symbol_hex_transparent.svg"
-                      alt="Lopva symbol"
+                      src={site.assets.symbol}
+                      alt={`${site.brandName} symbol`}
                       width={56}
                       height={56}
                       className="h-14 w-14"
@@ -177,8 +179,8 @@ export default function HomePage() {
                   </div>
                   <div>
                     <Image
-                      src="/brand/lopva_logo_posterior.png"
-                      alt="Lopva software solutions"
+                      src={site.assets.logoHeader}
+                      alt={site.brandName}
                       width={1024}
                       height={399}
                       className="h-16 w-auto sm:h-20 lg:h-24"
@@ -191,14 +193,14 @@ export default function HomePage() {
               </div>
 
               <p className="relative mt-4 max-w-2xl font-[family-name:var(--font-inter)] text-sm leading-6 text-white/72">
-                Software solutions para control operativo, accesos por empresa y
+                Soluciones de software para control operativo, accesos por empresa y
                 seguimiento de activos.
               </p>
 
               <div className="relative mt-6 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-[1.5rem] border border-white/10 bg-white/8 p-5">
                   <p className="font-[family-name:var(--font-inter)] text-sm font-medium text-white/70">
-                    Activos activos
+                    Activos en seguimiento
                   </p>
                   <p className="mt-4 font-[family-name:var(--font-montserrat)] text-4xl font-semibold">
                     128
@@ -223,7 +225,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <p className="mt-4 font-[family-name:var(--font-inter)] text-sm leading-6 text-white/72">
-                    Una interfaz preparada para cargar, revisar y operar sin friccion.
+                    Una interfaz preparada para cargar, revisar y operar sin fricción.
                   </p>
                 </div>
               </div>
@@ -232,17 +234,17 @@ export default function HomePage() {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <p className="font-[family-name:var(--font-inter)] text-sm font-medium text-white/70">
-                      Acceso rapido
+                      Acceso rápido
                     </p>
                     <p className="mt-1 font-[family-name:var(--font-montserrat)] text-lg font-semibold">
-                      Login directo a la plataforma
+                      Acceso directo a la plataforma
                     </p>
                   </div>
                   <Link
                     href="/login"
                     className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 font-[family-name:var(--font-sora)] text-sm font-semibold text-slate-900 transition hover:bg-cyan-50"
                   >
-                    Abrir login
+                    Abrir acceso
                   </Link>
                 </div>
               </div>
@@ -254,7 +256,7 @@ export default function HomePage() {
                   Seguridad
                 </p>
                 <p className="mt-3 font-[family-name:var(--font-inter)] text-base leading-7 text-slate-700">
-                  Accesos por rol y empresa para mantener la operacion separada y
+                  Accesos por rol y empresa para mantener la operación separada y
                   controlada.
                 </p>
               </div>
@@ -263,7 +265,7 @@ export default function HomePage() {
                   Movilidad
                 </p>
                 <p className="mt-3 font-[family-name:var(--font-inter)] text-base leading-7 text-slate-700">
-                  Disenado para que el equipo consulte, actualice y trabaje desde
+                  Diseñado para que el equipo consulte, actualice y trabaje desde
                   campo o escritorio.
                 </p>
               </div>
@@ -299,7 +301,7 @@ export default function HomePage() {
               Flujo
             </p>
             <h2 className="mt-3 font-[family-name:var(--font-montserrat)] text-3xl font-semibold tracking-tight text-slate-900">
-              Tres pasos para ordenar la operacion
+              Tres pasos para ordenar la operación
             </h2>
           </div>
           <div className="grid gap-3 md:grid-cols-3">
@@ -329,25 +331,27 @@ export default function HomePage() {
                 Tarjeta de Presentación Digital
               </p>
               <h2 className="mt-4 max-w-xl font-[family-name:var(--font-montserrat)] text-3xl font-semibold tracking-tight sm:text-4xl">
-                Una forma rápida de presentar Lopva y llevar a cada contacto al login.
+                {site.variant === "tdp"
+                  ? "Una base visual única para TDP, con acceso y datos separados del producto principal."
+                  : "Una forma rápida de presentar Lopva y llevar a cada contacto al login."}
               </h2>
               <p className="mt-5 max-w-xl font-[family-name:var(--font-inter)] text-base leading-7 text-white/76">
-                El menú público ahora incluye esta entrada para que la primera vista
-                funcione como una tarjeta digital: marca, propuesta de valor y acceso
-                directo a la plataforma.
+                {site.variant === "tdp"
+                  ? "El mismo formato visual se mantiene, pero la configuración, las variables y el despliegue son independientes."
+                  : "El menú público ahora incluye esta entrada para que la primera vista funcione como una tarjeta digital: marca, propuesta de valor y acceso directo a la plataforma."}
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
                   href="/login"
                   className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 font-[family-name:var(--font-sora)] text-sm font-semibold text-slate-900 transition hover:bg-cyan-50"
                 >
-                  Ir al login
+                  {site.home.ctaPrimary}
                 </Link>
                 <a
                   href="#plataforma-tdp"
                   className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-6 py-3 font-[family-name:var(--font-sora)] text-sm font-semibold text-white transition hover:bg-white/15"
                 >
-                  Ver Plataforma TPD
+                  {site.home.ctaSecondary}
                 </a>
               </div>
             </div>
@@ -358,15 +362,15 @@ export default function HomePage() {
                 </p>
                 <div className="mt-4 flex items-center gap-3">
                   <Image
-                    src="/brand/lopva_symbol_hex_transparent.svg"
-                    alt="Lopva symbol"
+                    src={site.assets.symbol}
+                    alt={`${site.brandName} symbol`}
                     width={64}
                     height={64}
                     className="h-16 w-16"
                   />
                   <Image
-                    src="/brand/lopva_logo_posterior.png"
-                    alt="Lopva"
+                    src={site.assets.logoCompact}
+                    alt={site.brandName}
                     width={1024}
                     height={399}
                     className="h-16 w-auto sm:h-20"
