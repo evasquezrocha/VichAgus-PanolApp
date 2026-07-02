@@ -1,4 +1,5 @@
 import { signOutAction } from "@/actions/auth.actions";
+import { PublicUrlCopyButton } from "@/components/tdp/public-url-copy-button";
 import { requireCurrentProfile } from "@/server/auth/guards";
 import { getTdpProfileConfig } from "@/server/dal/tdp-profile-configs.dal";
 import { getTdpPublicProfileBaseUrl } from "@/lib/site";
@@ -75,9 +76,17 @@ export default async function TdpPanelPage() {
                   {publicUrl ? (
                     <div className="break-all">
                       <span className="font-semibold text-slate-700">URL pública:</span>{" "}
-                      <a className="text-blue-700 underline" href={publicUrl} target="_blank" rel="noreferrer">
-                        {publicUrl}
-                      </a>
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        <a
+                          className="text-blue-700 underline"
+                          href={publicUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {publicUrl}
+                        </a>
+                        <PublicUrlCopyButton url={publicUrl} />
+                      </div>
                     </div>
                   ) : null}
                   <div>Usuario: {profile.email}</div>

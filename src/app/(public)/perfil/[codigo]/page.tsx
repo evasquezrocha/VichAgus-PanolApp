@@ -163,66 +163,63 @@ export default async function TdpPublicProfilePage({
     .filter((entry) => Boolean(entry.config));
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#4c5566_0%,_#262c3a_38%,_#151821_100%)] px-4 py-6 text-white sm:px-6 lg:px-10">
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-        <section className="rounded-[2rem] border border-sky-950/50 bg-slate-900/90 px-6 py-7 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#363d4a_0%,_#232833_42%,_#171b23_100%)] px-4 py-5 text-white sm:px-6 lg:px-10">
+      <div className="mx-auto flex w-full max-w-[430px] flex-col gap-4">
+        <section className="rounded-[1.8rem] border border-[#3d392d] bg-[#151515] px-5 py-5 shadow-[0_18px_50px_rgba(0,0,0,0.42)]">
           <div className="mx-auto max-w-[360px]">
             <div
-              className="flex min-h-[560px] flex-col items-center rounded-[2rem] border border-black/40 px-6 pb-8 pt-6 text-center shadow-[0_20px_40px_rgba(0,0,0,0.35)]"
+              className="flex min-h-[300px] flex-col items-center rounded-[1.9rem] border border-[#25221b] px-6 pb-8 pt-5 text-center shadow-[0_12px_24px_rgba(0,0,0,0.22)]"
               style={{ background: previewBackground, color: profile.text_color }}
             >
               {profile.widget_configs.photo?.file_url ? (
                 <img
                   src={profile.widget_configs.photo.file_url}
                   alt={profile.full_name || "Foto de perfil"}
-                  className="mb-5 h-24 w-24 rounded-full border border-white/15 object-cover shadow-lg"
+                  className="mb-4 h-24 w-24 rounded-full border border-white/15 object-cover shadow-lg"
                 />
               ) : null}
-              <div className="text-2xl font-extrabold">
+              <div className="text-[1.7rem] font-extrabold leading-tight">
                 {profile.full_name || "Perfil digital"}
               </div>
-              <div className="mt-2 text-base opacity-90">
+              <div className="mt-2 text-[1.02rem] text-white/65">
                 {profile.description || "Gerente"}
               </div>
               {profile.show_save_contact ? (
                 <a
                   href="#widgets"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white shadow-lg transition"
+                  className="mt-6 inline-flex min-w-[185px] items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white shadow-[0_14px_24px_rgba(73,112,236,0.3)] transition"
                   style={{ backgroundColor: profile.main_button_color }}
                 >
                   Guardar contacto
                 </a>
               ) : null}
-              <div className="mt-10 text-xs opacity-75">Powered by: lopva.cl</div>
+              <div className="mt-8 text-[0.72rem] text-white/45">Powered by: lopva.cl</div>
             </div>
           </div>
         </section>
 
         <section
           id="widgets"
-          className="rounded-[2rem] border border-blue-100 bg-white/90 p-6 text-slate-900 shadow-[0_18px_50px_rgba(30,58,138,0.08)] backdrop-blur"
+          className="rounded-[1.8rem] border border-[#3d392d] bg-[#151515] p-4 text-white shadow-[0_18px_50px_rgba(0,0,0,0.42)]"
         >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">
-                Perfil publico
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-1">
+            <div className="text-center">
+              <h1 className="text-[1.55rem] font-extrabold tracking-tight text-white">
                 {profile.full_name || "Perfil digital"}
               </h1>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-white/55">
                 {profile.description || "Tarjeta digital publica"}
               </p>
             </div>
             <a
               href={publicUrl}
-              className="rounded-full border border-blue-100 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"
+              className="rounded-full border border-[#3a3428] bg-[#1c1c1c] px-4 py-2 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/55"
             >
               {profile.profile_code}
             </a>
           </div>
 
-          <div className="mt-6 grid gap-4">
+          <div className="grid gap-3">
             {selectedWidgets.length > 0 ? (
               selectedWidgets.map((entry) => {
                 const widgetId = entry.id;
@@ -259,7 +256,7 @@ export default async function TdpPublicProfilePage({
                     return (
                       <PublicWidgetAction
                         key={widgetId}
-                        label="Telefono"
+                        label={`Teléfono: ${String(widget.number ?? "")}`.trim()}
                         href={getTelUrl(
                           String(widget.country_code ?? "+56"),
                           String(widget.number ?? ""),
@@ -273,7 +270,7 @@ export default async function TdpPublicProfilePage({
                     return (
                       <PublicWidgetAction
                         key={widgetId}
-                        label="Email"
+                        label={`Email: ${String(widget.email ?? "")}`.trim()}
                         href={getMailTo(
                           String(widget.email ?? ""),
                           String(widget.subject ?? ""),
@@ -322,7 +319,7 @@ export default async function TdpPublicProfilePage({
                     return (
                       <PublicWidgetAction
                         key={widgetId}
-                        label={widget.title || "Ubicacion"}
+                        label={widget.title || "Ubicación"}
                         href={normalizePublicUrl(String(widget.maps_url ?? ""))}
                         subtitle={widget.address || widget.maps_url || "Ver mapa"}
                         toneClassName="from-rose-500 to-orange-500"
@@ -384,7 +381,7 @@ export default async function TdpPublicProfilePage({
                 }
               })
             ) : (
-              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600">
+              <div className="rounded-[1.15rem] border border-dashed border-[#3a3428] bg-[#171717] p-6 text-sm text-white/55">
                 Este perfil no tiene widgets publicados todavia.
               </div>
             )}
