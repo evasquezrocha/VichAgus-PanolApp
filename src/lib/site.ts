@@ -37,7 +37,8 @@ export function getDefaultDashboardPath() {
 }
 
 function envAsset(key: string, fallback: string) {
-  return process.env[key] ?? fallback;
+  const value = process.env[key]?.trim();
+  return value ? value : fallback;
 }
 
 const sharedAssets = {
@@ -90,7 +91,11 @@ const tdpConfig: SiteConfig = {
     helperTitle: "Acceso TDP",
     helperDescription: "Sesión y datos separados de la plataforma principal.",
   },
-  assets: sharedAssets,
+  assets: {
+    logoHeader: "/brand/lopva_logo_tdp_horizontal.png",
+    logoCompact: "/brand/lopva_logo_tdp_horizontal.png",
+    symbol: sharedAssets.symbol,
+  },
 };
 
 export function getSiteConfig(): SiteConfig {

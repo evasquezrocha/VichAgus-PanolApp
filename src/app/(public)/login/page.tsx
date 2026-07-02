@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FlashBanner } from "@/components/ui/flash-banner";
 import { signInWithPasswordAction } from "@/actions/auth.actions";
 import { getFlashMessage } from "@/lib/flash";
-import { getDefaultDashboardPath, getSiteConfig } from "@/lib/site";
+import { getDefaultDashboardPath, getSiteConfig, isTdpSite } from "@/lib/site";
 
 type LoginPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -30,16 +30,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="relative grid min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
         <section className="relative hidden flex-col justify-between overflow-hidden bg-slate-900 p-10 text-white lg:flex">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.35),_transparent_35%),radial-gradient(circle_at_80%_20%,_rgba(6,182,212,0.22),_transparent_25%),linear-gradient(135deg,_rgba(30,58,138,0.95),_rgba(15,23,42,0.98))]" />
-          <div className="relative flex h-full flex-col justify-between">
-            <Image
-              src={site.assets.logoHeader}
-              alt={site.brandName}
-              width={1024}
-              height={399}
-              priority
-              className="h-16 w-auto object-contain"
-            />
-
+          <div
+            className={[
+              "relative flex h-full flex-col",
+              isTdpSite() ? "justify-center gap-10" : "justify-between",
+            ].join(" ")}
+          >
+            <div className={isTdpSite() ? "flex flex-1 items-center justify-center" : ""}>
+              <Image
+                src={site.assets.logoHeader}
+                alt={site.brandName}
+                width={1024}
+                height={399}
+                priority
+                className={isTdpSite() ? "h-24 w-auto object-contain lg:h-32" : "h-16 w-auto object-contain"}
+              />
+            </div>
             <div className="max-w-xl">
               <p className="font-[family-name:var(--font-sora)] text-sm font-semibold uppercase tracking-[0.3em] text-white/70">
                 {site.login.helperTitle}
@@ -63,7 +69,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   alt={site.brandName}
                   width={1024}
                   height={399}
-                  className="h-12 w-auto max-w-[220px] object-contain"
+                  className={isTdpSite() ? "h-14 w-auto max-w-[260px] object-contain" : "h-12 w-auto max-w-[220px] object-contain"}
                 />
               </Link>
               <Link
