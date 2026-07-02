@@ -86,8 +86,7 @@ const tdpConfig: SiteConfig = {
   },
   login: {
     title: "Iniciar sesión en TDP",
-    description:
-      "Acceso independiente para administrar el contenido, la presentación y las reglas de TDP sin compartir sesión con la plataforma principal.",
+    description: "Accede al sistema de gestión de tarjetas digitales",
     helperTitle: "Acceso TDP",
     helperDescription: "Sesión y datos separados de la plataforma principal.",
   },

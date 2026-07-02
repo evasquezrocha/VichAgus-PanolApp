@@ -32,12 +32,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.35),_transparent_35%),radial-gradient(circle_at_80%_20%,_rgba(6,182,212,0.22),_transparent_25%),linear-gradient(135deg,_rgba(30,58,138,0.95),_rgba(15,23,42,0.98))]" />
           <div className="relative flex h-full flex-col justify-between">
             <Image
-              src={site.assets.logoCompact}
+              src={site.assets.logoHeader}
               alt={site.brandName}
-              width={320}
-              height={384}
+              width={1024}
+              height={399}
               priority
-              className="h-16 w-auto"
+              className="h-16 w-auto object-contain"
             />
 
             <div className="max-w-xl">
@@ -51,25 +51,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 {site.login.description}
               </p>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <p className="font-[family-name:var(--font-sora)] text-xs font-semibold uppercase tracking-[0.25em] text-white/60">
-                  Seguridad
-                </p>
-                <p className="mt-3 font-[family-name:var(--font-inter)] text-base leading-7 text-white/82">
-                  {site.login.helperDescription}
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] border border-white/10 bg-white/10 p-5 backdrop-blur">
-                <p className="font-[family-name:var(--font-sora)] text-xs font-semibold uppercase tracking-[0.25em] text-white/60">
-                  Enfoque
-                </p>
-                <p className="mt-3 font-[family-name:var(--font-inter)] text-base leading-7 text-white/82">
-                  Flujo rápido, simple y preparado para uso en escritorio o campo.
-                </p>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -78,11 +59,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <div className="mb-4 flex items-center justify-between lg:hidden">
               <Link href="/" className="inline-flex items-center gap-3">
                 <Image
-                  src={site.assets.logoCompact}
+                  src={site.assets.logoHeader}
                   alt={site.brandName}
-                  width={260}
-                  height={312}
-                  className="h-14 w-auto"
+                  width={1024}
+                  height={399}
+                  className="h-12 w-auto max-w-[220px] object-contain"
                 />
               </Link>
               <Link
