@@ -1,4 +1,5 @@
 import { PublicWidgetAction } from "@/components/tdp/public-widget-action";
+import { PublicSaveContactButton } from "@/components/tdp/public-save-contact-button";
 import { getTdpPublicProfileBaseUrl } from "@/lib/site";
 import { getTdpProfileByPublicCode } from "@/server/dal/tdp-profile-configs.dal";
 import type { TdpWidgetId } from "@/types/tdp-profile";
@@ -40,6 +41,11 @@ function getTelUrl(countryCode: string, number: string) {
 function getMailTo(email: string, subject: string) {
   const params = subject ? `?subject=${encodeURIComponent(subject)}` : "";
   return `mailto:${email}${params}`;
+}
+
+function normalizePhoneNumber(countryCode: string, number: string) {
+  const value = `${countryCode}${number}`.replace(/[^\d+]/g, "");
+  return value.startsWith("+") ? value : `+${value.replace(/^\+/, "")}`;
 }
 
 function getStorageProxyUrl(storagePath: string) {
@@ -168,6 +174,76 @@ export default async function TdpPublicProfilePage({
       config: profile.widget_configs[widgetId],
     }))
     .filter((entry) => Boolean(entry.config));
+  const saveContactData = selectedWidgets.reduce(
+    (accumulator, entry) => {
+      const widget = entry.config as Record<string, string | null>;
+
+      switch (entry.id) {
+        case "whatsapp":
+          if (widget.number) {
+            accumulator.phones.push({
+              value: normalizePhoneNumber(
+                String(widget.country_code ?? "+56"),
+                String(widget.number ?? ""),
+              ),
+              types: ["CELL", "WHATSAPP"],
+            });
+          }
+          break;
+        case "phone":
+          if (widget.number) {
+            accumulator.phones.push({
+              value: normalizePhoneNumber(
+                String(widget.country_code ?? "+56"),
+                String(widget.number ?? ""),
+              ),
+              types: ["CELL", "VOICE"],
+            });
+          }
+          break;
+        case "email":
+          if (widget.email) {
+            accumulator.emails.push(String(widget.email));
+          }
+          break;
+        case "website":
+          if (widget.url) {
+            accumulator.urls.push(String(widget.url));
+          }
+          break;
+        case "linkedin":
+          if (widget.url) {
+            accumulator.urls.push(String(widget.url));
+          }
+          break;
+        case "location":
+          if (widget.maps_url) {
+            accumulator.urls.push(String(widget.maps_url));
+          }
+          if (widget.address) {
+            accumulator.address = String(widget.address);
+          } else if (widget.title && !accumulator.address) {
+            accumulator.address = String(widget.title);
+          }
+          break;
+        case "custom":
+          if (widget.url) {
+            accumulator.urls.push(String(widget.url));
+          }
+          break;
+        default:
+          break;
+      }
+
+      return accumulator;
+    },
+    {
+      phones: [] as Array<{ value: string; types: string[] }>,
+      emails: [] as string[],
+      urls: [] as string[],
+      address: "",
+    },
+  );
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#363d4a_0%,_#232833_42%,_#171b23_100%)] px-4 py-5 text-white sm:px-6 lg:px-10">
@@ -191,14 +267,21 @@ export default async function TdpPublicProfilePage({
               <div className="mt-2 text-[1.02rem] text-white/65">
                 {profile.description || "Gerente"}
               </div>
+              {profile.company_name ? (
+                <div className="mt-1 text-sm text-white/55">{profile.company_name}</div>
+              ) : null}
               {profile.show_save_contact ? (
-                <a
-                  href="#widgets"
-                  className="mt-6 inline-flex min-w-[185px] items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white shadow-[0_14px_24px_rgba(73,112,236,0.3)] transition"
-                  style={{ backgroundColor: profile.main_button_color }}
-                >
-                  Guardar contacto
-                </a>
+                <PublicSaveContactButton
+                  fullName={profile.full_name || "Perfil digital"}
+                  companyName={profile.company_name}
+                  title={profile.contact_title || profile.description || ""}
+                  photoUrl={profile.widget_configs.photo?.file_url ?? null}
+                  phones={saveContactData.phones}
+                  emails={saveContactData.emails}
+                  urls={saveContactData.urls}
+                  address={saveContactData.address}
+                  backgroundColor={profile.main_button_color}
+                />
               ) : null}
             </div>
 

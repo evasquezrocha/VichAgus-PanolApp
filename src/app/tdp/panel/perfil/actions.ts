@@ -22,6 +22,7 @@ const widgetIdSchema = z.enum(TDP_WIDGET_IDS);
 
 const tdpProfileConfigSchema = z.object({
   full_name: z.string().trim().max(120),
+  company_name: z.string().trim().max(120),
   description: z.string().trim().max(120),
   background_1: z.string().trim().max(16),
   use_second_background: z.boolean(),

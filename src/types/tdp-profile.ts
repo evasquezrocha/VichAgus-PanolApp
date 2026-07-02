@@ -17,6 +17,7 @@ export type TdpWidgetId = (typeof TDP_WIDGET_IDS)[number];
 export type TdpProfileConfig = {
   profile_code: string;
   full_name: string;
+  company_name: string;
   description: string;
   background_1: string;
   use_second_background: boolean;
@@ -36,6 +37,7 @@ export type TdpProfileConfig = {
 export const DEFAULT_TDP_PROFILE_CONFIG: TdpProfileConfig = {
   profile_code: "",
   full_name: "",
+  company_name: "",
   description: "",
   background_1: "#0A0A0A",
   use_second_background: true,

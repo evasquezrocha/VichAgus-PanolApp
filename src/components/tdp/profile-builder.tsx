@@ -543,6 +543,16 @@ export function TdpProfileBuilder({
             </label>
 
             <label className="flex flex-col gap-2">
+              <span className="text-base font-semibold">Empresa</span>
+              <input
+                value={config.company_name}
+                onChange={(event) => updateConfig("company_name", event.target.value)}
+                className="h-14 rounded-xl border border-white/10 bg-white/15 px-4 text-lg outline-none ring-0 placeholder:text-white/30"
+                placeholder="Empresa"
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
               <span className="text-base font-semibold">Descripción</span>
               <input
                 value={config.description}
@@ -569,6 +579,9 @@ export function TdpProfileBuilder({
               <div className="mt-2 text-base opacity-90">
                 {config.description || "Gerente"}
               </div>
+              {config.company_name ? (
+                <div className="mt-1 text-sm opacity-80">{config.company_name}</div>
+              ) : null}
               {config.show_save_contact ? (
                 <button
                   type="button"

@@ -15,6 +15,7 @@ type TdpProfileConfigRow = {
   user_id: string;
   profile_code: string;
   full_name: string;
+  company_name: string;
   description: string;
   background_1: string;
   use_second_background: boolean;
@@ -42,6 +43,7 @@ function mapRowToConfig(row: TdpProfileConfigRow | null): TdpProfileConfig {
   return {
     profile_code: row.profile_code ?? "",
     full_name: row.full_name ?? "",
+    company_name: row.company_name ?? "",
     description: row.description ?? "",
     background_1: row.background_1 ?? DEFAULT_TDP_PROFILE_CONFIG.background_1,
     use_second_background:
@@ -112,7 +114,7 @@ export async function getTdpProfileConfig(
   const { data, error } = await supabase
     .from("tdp_profile_configs")
     .select(
-      "user_id, profile_code, full_name, description, background_1, use_second_background, background_2, text_color, main_button_color, icon_color, widget_button_bg, widget_button_text, widget_button_hover, show_save_contact, contact_title, widget_ids, widget_configs",
+      "user_id, profile_code, full_name, company_name, description, background_1, use_second_background, background_2, text_color, main_button_color, icon_color, widget_button_bg, widget_button_text, widget_button_hover, show_save_contact, contact_title, widget_ids, widget_configs",
     )
     .eq("user_id", userId)
     .single();
@@ -142,6 +144,7 @@ export async function saveTdpProfileConfig(
     user_id: userId,
     profile_code: config.profile_code,
     full_name: config.full_name,
+    company_name: config.company_name,
     description: config.description,
     background_1: config.background_1,
     use_second_background: config.use_second_background,
@@ -170,7 +173,7 @@ export async function getTdpProfileByPublicCode(
   const { data, error } = await supabase
     .from("tdp_profile_configs")
     .select(
-      "user_id, profile_code, full_name, description, background_1, use_second_background, background_2, text_color, main_button_color, icon_color, widget_button_bg, widget_button_text, widget_button_hover, show_save_contact, contact_title, widget_ids, widget_configs",
+      "user_id, profile_code, full_name, company_name, description, background_1, use_second_background, background_2, text_color, main_button_color, icon_color, widget_button_bg, widget_button_text, widget_button_hover, show_save_contact, contact_title, widget_ids, widget_configs",
     )
     .eq("profile_code", profileCode)
     .single();
