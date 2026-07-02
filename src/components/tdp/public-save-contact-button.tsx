@@ -51,6 +51,22 @@ function buildVCard({
   urls,
   address,
 }: Omit<PublicSaveContactButtonProps, "backgroundColor">) {
+  const uniquePhones = new Map<string, string[]>();
+
+  for (const phone of phones) {
+    const normalizedValue = phone.value.trim();
+    if (!normalizedValue) {
+      continue;
+    }
+
+    const existingTypes = uniquePhones.get(normalizedValue);
+    if (existingTypes) {
+      uniquePhones.set(normalizedValue, Array.from(new Set([...existingTypes, ...phone.types])));
+    } else {
+      uniquePhones.set(normalizedValue, [...phone.types]);
+    }
+  }
+
   const lines: string[] = [
     "BEGIN:VCARD",
     "VERSION:3.0",
@@ -70,9 +86,9 @@ function buildVCard({
     lines.push(`PHOTO;VALUE=URI:${escapeVCardValue(photoUrl)}`);
   }
 
-  for (const phone of phones) {
-    if (phone.value.trim()) {
-      lines.push(`TEL;TYPE=${phone.types.join(",")}:${escapeVCardValue(phone.value)}`);
+  for (const [phoneNumber, phoneTypes] of uniquePhones) {
+    if (phoneNumber.trim()) {
+      lines.push(`TEL;TYPE=${phoneTypes.join(",")}:${escapeVCardValue(phoneNumber)}`);
     }
   }
 

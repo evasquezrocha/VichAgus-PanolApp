@@ -20,16 +20,38 @@ export function PublicWidgetAction({
   toneClassName,
   icon,
 }: PublicWidgetActionProps) {
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">("idle");
 
   async function copyToClipboard() {
     if (!copyText) {
       return;
     }
 
-    await navigator.clipboard.writeText(copyText);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(copyText);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = copyText;
+        textarea.setAttribute("readonly", "true");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand("copy");
+        textarea.remove();
+
+        if (!copied) {
+          throw new Error("Clipboard copy failed");
+        }
+      }
+
+      setCopyStatus("copied");
+      window.setTimeout(() => setCopyStatus("idle"), 1800);
+    } catch {
+      setCopyStatus("error");
+      window.setTimeout(() => setCopyStatus("idle"), 2200);
+    }
   }
 
   const content = (
@@ -41,6 +63,7 @@ export function PublicWidgetAction({
       </div>
       <div className="min-w-0 flex-1 text-left">
         <div className="text-[1.05rem] font-bold leading-tight text-white">{label}</div>
+        {subtitle ? <div className="mt-1 text-sm text-white/55">{subtitle}</div> : null}
       </div>
       {href ? (
         <svg
@@ -83,9 +106,14 @@ export function PublicWidgetAction({
         title={`${label}: copiar datos`}
       >
         <div className="flex items-center gap-4">{content}</div>
-        {copied ? (
+        {copyStatus === "copied" ? (
           <div className="mt-3 text-sm font-semibold text-emerald-300">
             Datos copiados
+          </div>
+        ) : null}
+        {copyStatus === "error" ? (
+          <div className="mt-3 text-sm font-semibold text-rose-300">
+            No se pudo copiar
           </div>
         ) : null}
       </button>

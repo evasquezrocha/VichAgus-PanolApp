@@ -3,6 +3,7 @@ import { PublicSaveContactButton } from "@/components/tdp/public-save-contact-bu
 import { getTdpPublicProfileBaseUrl } from "@/lib/site";
 import { getTdpProfileByPublicCode } from "@/server/dal/tdp-profile-configs.dal";
 import type { TdpWidgetId } from "@/types/tdp-profile";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 
 type TdpPublicProfilePageProps = {
@@ -255,9 +256,12 @@ export default async function TdpPublicProfilePage({
           >
             <div className="flex flex-col items-center text-center">
               {profile.widget_configs.photo?.file_url ? (
-                <img
+                <Image
                   src={profile.widget_configs.photo.file_url}
                   alt={profile.full_name || "Foto de perfil"}
+                  width={96}
+                  height={96}
+                  unoptimized
                   className="mb-4 h-24 w-24 rounded-full border border-white/15 object-cover shadow-lg"
                 />
               ) : null}
@@ -391,7 +395,7 @@ export default async function TdpPublicProfilePage({
                       return (
                         <PublicWidgetAction
                           key={widgetId}
-                          label="Transferencia"
+                          label="Datos Transferencia"
                           copyText={copyText}
                           toneClassName="from-fuchsia-500 to-violet-500"
                           icon={<WidgetGlyph widgetId={widgetId} />}
