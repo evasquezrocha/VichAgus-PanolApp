@@ -226,15 +226,16 @@ export type Database = {
           },
         ];
       };
-        tdp_profile_configs: {
-          Row: {
-            user_id: string;
-            profile_code: string;
-            full_name: string;
-            company_name: string;
-            description: string;
-            background_1: string;
-            use_second_background: boolean;
+      tdp_profile_configs: {
+        Row: {
+          id: string;
+          user_id: string;
+          profile_code: string;
+          full_name: string;
+          company_name: string;
+          description: string;
+          background_1: string;
+          use_second_background: boolean;
           background_2: string;
           text_color: string;
           main_button_color: string;
@@ -249,14 +250,15 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-          Insert: {
-            user_id: string;
-            profile_code?: string;
-            full_name?: string;
-            company_name?: string;
-            description?: string;
-            background_1?: string;
-            use_second_background?: boolean;
+        Insert: {
+          id?: string;
+          user_id: string;
+          profile_code?: string;
+          full_name?: string;
+          company_name?: string;
+          description?: string;
+          background_1?: string;
+          use_second_background?: boolean;
           background_2?: string;
           text_color?: string;
           main_button_color?: string;
@@ -271,14 +273,15 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-          Update: {
-            user_id?: string;
-            profile_code?: string;
-            full_name?: string;
-            company_name?: string;
-            description?: string;
-            background_1?: string;
-            use_second_background?: boolean;
+        Update: {
+          id?: string;
+          user_id?: string;
+          profile_code?: string;
+          full_name?: string;
+          company_name?: string;
+          description?: string;
+          background_1?: string;
+          use_second_background?: boolean;
           background_2?: string;
           text_color?: string;
           main_button_color?: string;

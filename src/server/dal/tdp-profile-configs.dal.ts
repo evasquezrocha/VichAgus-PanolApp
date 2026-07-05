@@ -1,12 +1,10 @@
 import "server-only";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
   DEFAULT_TDP_PROFILE_CONFIG,
   normalizeTdpWidgetConfigMap,
   type TdpProfileConfig,
-  type TdpWidgetId,
   sanitizeTdpWidgetIds,
 } from "@/types/tdp-profile";
 import { randomBytes } from "node:crypto";
@@ -31,6 +29,9 @@ type TdpProfileConfigRow = {
   widget_ids: string[];
   widget_configs: Record<string, unknown> | null;
 };
+
+const TDP_PROFILE_CONFIG_SELECT_COLUMNS =
+  "user_id, profile_code, full_name, company_name, description, background_1, use_second_background, background_2, text_color, main_button_color, icon_color, widget_button_bg, widget_button_text, widget_button_hover, show_save_contact, contact_title, widget_ids, widget_configs";
 
 function mapRowToConfig(row: TdpProfileConfigRow | null): TdpProfileConfig {
   if (!row) {
@@ -76,7 +77,7 @@ function generateProfileCode() {
 }
 
 async function ensureProfileCode(
-  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
   row: TdpProfileConfigRow,
 ) {
   if (row.profile_code.trim().length > 0) {
@@ -110,13 +111,13 @@ async function ensureProfileCode(
 export async function getTdpProfileConfig(
   userId: string,
 ): Promise<TdpProfileConfig> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("tdp_profile_configs")
-    .select(
-      "user_id, profile_code, full_name, company_name, description, background_1, use_second_background, background_2, text_color, main_button_color, icon_color, widget_button_bg, widget_button_text, widget_button_hover, show_save_contact, contact_title, widget_ids, widget_configs",
-    )
+    .select(TDP_PROFILE_CONFIG_SELECT_COLUMNS)
     .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .single();
 
   if (error || !data) {
@@ -139,27 +140,32 @@ export async function saveTdpProfileConfig(
   userId: string,
   config: TdpProfileConfig,
 ) {
-  const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.from("tdp_profile_configs").upsert({
-    user_id: userId,
-    profile_code: config.profile_code,
-    full_name: config.full_name,
-    company_name: config.company_name,
-    description: config.description,
-    background_1: config.background_1,
-    use_second_background: config.use_second_background,
-    background_2: config.background_2,
-    text_color: config.text_color,
-    main_button_color: config.main_button_color,
-    icon_color: config.icon_color,
-    widget_button_bg: config.widget_button_bg,
-    widget_button_text: config.widget_button_text,
-    widget_button_hover: config.widget_button_hover,
-    show_save_contact: config.show_save_contact,
-    contact_title: config.contact_title,
-    widget_ids: sanitizeTdpWidgetIds(config.widget_ids),
-    widget_configs: config.widget_configs,
-  });
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase
+    .from("tdp_profile_configs")
+    .upsert(
+      {
+        user_id: userId,
+        profile_code: config.profile_code,
+        full_name: config.full_name,
+        company_name: config.company_name,
+        description: config.description,
+        background_1: config.background_1,
+        use_second_background: config.use_second_background,
+        background_2: config.background_2,
+        text_color: config.text_color,
+        main_button_color: config.main_button_color,
+        icon_color: config.icon_color,
+        widget_button_bg: config.widget_button_bg,
+        widget_button_text: config.widget_button_text,
+        widget_button_hover: config.widget_button_hover,
+        show_save_contact: config.show_save_contact,
+        contact_title: config.contact_title,
+        widget_ids: sanitizeTdpWidgetIds(config.widget_ids),
+        widget_configs: config.widget_configs,
+      },
+      { onConflict: "profile_code" },
+    );
 
   if (error) {
     throw new Error(error.message);
@@ -172,9 +178,7 @@ export async function getTdpProfileByPublicCode(
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("tdp_profile_configs")
-    .select(
-      "user_id, profile_code, full_name, company_name, description, background_1, use_second_background, background_2, text_color, main_button_color, icon_color, widget_button_bg, widget_button_text, widget_button_hover, show_save_contact, contact_title, widget_ids, widget_configs",
-    )
+    .select(TDP_PROFILE_CONFIG_SELECT_COLUMNS)
     .eq("profile_code", profileCode)
     .single();
 
@@ -183,4 +187,21 @@ export async function getTdpProfileByPublicCode(
   }
 
   return mapRowToConfig(data as TdpProfileConfigRow);
+}
+
+export async function listTdpProfileConfigsByUserId(
+  userId: string,
+): Promise<TdpProfileConfig[]> {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("tdp_profile_configs")
+    .select(TDP_PROFILE_CONFIG_SELECT_COLUMNS)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error || !data?.length) {
+    return [];
+  }
+
+  return data.map((row) => mapRowToConfig(row as TdpProfileConfigRow));
 }

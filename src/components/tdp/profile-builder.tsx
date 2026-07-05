@@ -2,6 +2,8 @@
 
 import { FlashBanner } from "@/components/ui/flash-banner";
 import { saveTdpProfileConfigAction } from "@/app/tdp/panel/perfil/actions";
+import { PublicSaveContactButton } from "@/components/tdp/public-save-contact-button";
+import { PublicWidgetAction } from "@/components/tdp/public-widget-action";
 import {
   DEFAULT_TDP_PROFILE_CONFIG,
   TDP_WIDGET_DEFINITIONS,
@@ -23,6 +25,7 @@ import {
   type TdpWidgetId,
 } from "@/types/tdp-profile";
 import type { FlashMessage } from "@/lib/flash";
+import Image from "next/image";
 import Link from "next/link";
 import type { HTMLAttributes, ReactNode } from "react";
 import { useMemo, useState } from "react";
@@ -31,6 +34,8 @@ type TdpProfileBuilderProps = {
   flash: FlashMessage | null;
   initialConfig: TdpProfileConfig;
   userName: string;
+  targetUserId: string;
+  returnTo: string;
 };
 
 type DragState = {
@@ -196,13 +201,159 @@ function ArrowDownIcon() {
   );
 }
 
-function EditIcon() {
-  return (
+function ChevronUpDownIcon({ expanded }: { expanded: boolean }) {
+  return expanded ? (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      <path d="M7 10l5-5 5 5" />
+      <path d="M7 14l5 5 5-5" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M7 14l5 5 5-5" />
     </svg>
   );
+}
+
+function buildPreviewBackground(
+  background1: string,
+  background2: string,
+  useSecondBackground: boolean,
+) {
+  return useSecondBackground
+    ? `linear-gradient(180deg, ${background1} 0%, ${background2} 100%)`
+    : background1;
+}
+
+function normalizePublicUrl(url: string) {
+  const value = url.trim();
+  if (!value) {
+    return "#";
+  }
+
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
+function getWhatsappUrl(countryCode: string, number: string, message: string) {
+  const cleaned = `${countryCode}${number}`.replace(/[^\d]/g, "");
+  const text = encodeURIComponent(message || "Hola! Te escribo desde tu tarjeta digital");
+  return `https://wa.me/${cleaned}${text ? `?text=${text}` : ""}`;
+}
+
+function getTelUrl(countryCode: string, number: string) {
+  return `tel:${`${countryCode}${number}`.replace(/\s+/g, "")}`;
+}
+
+function getMailTo(email: string, subject: string) {
+  const params = subject ? `?subject=${encodeURIComponent(subject)}` : "";
+  return `mailto:${email}${params}`;
+}
+
+function normalizePhoneNumber(countryCode: string, number: string) {
+  const value = `${countryCode}${number}`.replace(/[^\d+]/g, "");
+  return value.startsWith("+") ? value : `+${value.replace(/^\+/, "")}`;
+}
+
+function getStorageProxyUrl(storagePath: string) {
+  return `/api/tdp/storage/${storagePath
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/")}`;
+}
+
+function PreviewWidgetGlyph({ widgetId }: { widgetId: TdpWidgetId }) {
+  const iconProps = {
+    className: "h-5 w-5",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  switch (widgetId) {
+    case "photo":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <rect x="4" y="5" width="16" height="14" rx="3" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      );
+    case "whatsapp":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <path d="M20 11.7A8 8 0 1 1 8.3 5l1.2-.2a8 8 0 0 1 10.5 7.7Z" />
+          <path d="M9.2 8.2c.2-.4.7-.7 1.1-.7h.4c.4 0 .8.2 1 .6l.6 1.3c.2.5.1 1-.2 1.4l-.7.8c-.2.2-.2.6 0 .9.7 1.4 1.9 2.6 3.3 3.3.3.2.7.2.9 0l.8-.7c.4-.4.9-.4 1.4-.2l1.4.6c.4.2.6.6.6 1v.5c0 .5-.2.9-.7 1.1-.7.3-1.5.4-2.2.2-3.8-1-7.1-4.3-8.1-8.1-.2-.7-.1-1.5.2-2.2Z" />
+        </svg>
+      );
+    case "phone":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <path d="M7.4 4.5h2.8l1.4 4-1.8 1.8a13 13 0 0 0 3.9 3.9l1.8-1.8 4 1.4v2.8c0 .9-.7 1.6-1.6 1.6C9.9 18.2 5.8 14.1 5.8 8.6c0-.9.7-1.6 1.6-1.6Z" />
+        </svg>
+      );
+    case "email":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <rect x="3.5" y="5.5" width="17" height="13" rx="2.2" />
+          <path d="m4.8 7.2 7.2 5.8 7.2-5.8" />
+        </svg>
+      );
+    case "instagram":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <rect x="4" y="4" width="16" height="16" rx="5" />
+          <circle cx="12" cy="12" r="3.4" />
+        </svg>
+      );
+    case "linkedin":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <rect x="4" y="4" width="16" height="16" rx="3.5" />
+          <path d="M8.2 10v6" />
+          <path d="M8.2 8.2v.2" />
+          <path d="M11.2 16v-3.5c0-1.3.8-2.2 2-2.2 1.1 0 1.8.8 1.8 2.2V16" />
+        </svg>
+      );
+    case "website":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M4 12h16" />
+          <path d="M12 4c2.3 2.4 3.5 5 3.5 8s-1.2 5.6-3.5 8c-2.3-2.4-3.5-5-3.5-8S9.7 6.4 12 4Z" />
+        </svg>
+      );
+    case "location":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <path d="M12 21s6-5.5 6-11a6 6 0 1 0-12 0c0 5.5 6 11 6 11Z" />
+          <circle cx="12" cy="10" r="2.1" />
+        </svg>
+      );
+    case "transfer":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <rect x="3.5" y="6" width="17" height="11.5" rx="2.2" />
+          <path d="M6 10h12" />
+        </svg>
+      );
+    case "pdf":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <path d="M7.2 3.5h7.6l4 4V20.5H7.2Z" />
+          <path d="M14.8 3.5v4h4" />
+          <path d="M9.2 14h5.6" />
+        </svg>
+      );
+    case "custom":
+      return (
+        <svg viewBox="0 0 24 24" {...iconProps}>
+          <path d="M10 14a4 4 0 0 1 0-5.7l1.2-1.2a4 4 0 0 1 5.7 0 4 4 0 0 1 0 5.7l-.8.8" />
+          <path d="M14 10a4 4 0 0 1 0 5.7l-1.2 1.2a4 4 0 0 1-5.7 0 4 4 0 0 1 0-5.7l.8-.8" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
 
 function TrashIcon() {
@@ -244,16 +395,6 @@ function MessageIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M4 5h16v10H8l-4 4Z" />
-    </svg>
-  );
-}
-
-function GlobeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M4 12h16" />
-      <path d="M12 4c2.3 2.4 3.5 5 3.5 8s-1.2 5.6-3.5 8c-2.3-2.4-3.5-5-3.5-8S9.7 6.4 12 4Z" />
     </svg>
   );
 }
@@ -315,6 +456,8 @@ export function TdpProfileBuilder({
   flash,
   initialConfig,
   userName,
+  targetUserId,
+  returnTo,
 }: TdpProfileBuilderProps) {
   const [config, setConfig] = useState<TdpProfileConfig>(() =>
     mergeConfig({
@@ -344,6 +487,88 @@ export function TdpProfileBuilder({
           Boolean(definition),
       );
   }, [config.widget_ids]);
+
+  const selectedPreviewWidgets = useMemo(() => {
+    return config.widget_ids
+      .map((widgetId) => ({
+        id: widgetId,
+        config: config.widget_configs[widgetId],
+      }))
+      .filter((entry) => Boolean(entry.config));
+  }, [config.widget_configs, config.widget_ids]);
+
+  const saveContactData = useMemo(() => {
+    return selectedPreviewWidgets.reduce(
+      (accumulator, entry) => {
+        const widget = entry.config as Record<string, string | null>;
+
+        switch (entry.id) {
+          case "whatsapp":
+            if (widget.number) {
+              accumulator.phones.push({
+                value: normalizePhoneNumber(
+                  String(widget.country_code ?? "+56"),
+                  String(widget.number ?? ""),
+                ),
+                types: ["CELL", "WHATSAPP"],
+              });
+            }
+            break;
+          case "phone":
+            if (widget.number) {
+              accumulator.phones.push({
+                value: normalizePhoneNumber(
+                  String(widget.country_code ?? "+56"),
+                  String(widget.number ?? ""),
+                ),
+                types: ["CELL", "VOICE"],
+              });
+            }
+            break;
+          case "email":
+            if (widget.email) {
+              accumulator.emails.push(String(widget.email));
+            }
+            break;
+          case "website":
+            if (widget.url) {
+              accumulator.urls.push(String(widget.url));
+            }
+            break;
+          case "linkedin":
+            if (widget.url) {
+              accumulator.urls.push(String(widget.url));
+            }
+            break;
+          case "location":
+            if (widget.maps_url) {
+              accumulator.urls.push(String(widget.maps_url));
+            }
+            if (widget.address) {
+              accumulator.address = String(widget.address);
+            } else if (widget.title && !accumulator.address) {
+              accumulator.address = String(widget.title);
+            }
+            break;
+          case "custom":
+            if (widget.url) {
+              accumulator.urls.push(String(widget.url));
+            }
+            break;
+          default:
+            break;
+        }
+
+        return accumulator;
+      },
+      {
+        phones: [] as Array<{ value: string; types: string[] }>,
+        emails: [] as string[],
+        urls: [] as string[],
+        address: "",
+      },
+    );
+  }, [selectedPreviewWidgets]);
 
   const serializedConfig = useMemo(() => JSON.stringify(config), [config]);
 
@@ -496,10 +721,8 @@ export function TdpProfileBuilder({
   }
 
   const previewBackground = useMemo(() => {
-    return config.use_second_background
-      ? `linear-gradient(180deg, ${config.background_1} 0%, ${config.background_2} 100%)`
-      : config.background_1;
-  }, [config.background_1, config.background_2, config.use_second_background]);
+    return buildPreviewBackground(config);
+  }, [config]);
 
   function getWidgetConfig<T extends TdpWidgetId>(widgetId: T) {
     return (config.widget_configs[widgetId] ??
@@ -520,6 +743,8 @@ export function TdpProfileBuilder({
       className="min-h-screen bg-[radial-gradient(circle_at_top,_#4c5566_0%,_#262c3a_38%,_#151821_100%)] px-4 py-4 text-white sm:px-6 lg:px-10"
     >
       <input name="config_json" type="hidden" value={serializedConfig} readOnly />
+      <input name="target_user_id" type="hidden" value={targetUserId} readOnly />
+      <input name="return_to" type="hidden" value={returnTo} readOnly />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <FlashBanner flash={flash} />
 
@@ -564,35 +789,199 @@ export function TdpProfileBuilder({
           </div>
         </section>
 
-        <section className="rounded-[1.75rem] border border-sky-950/50 bg-slate-900/90 px-6 py-7 shadow-[0_24px_80px_rgba(0,0,0,0.35)]">
-          <div className="mx-auto max-w-[360px]">
-            <div className="text-center">
-              <h3 className="text-2xl font-extrabold">Vista Previa</h3>
-            </div>
+        <section className="rounded-[1.95rem] border border-[#3d392d] bg-[#151515] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.42)]">
+          <div className="mx-auto flex w-full max-w-[430px] flex-col">
             <div
-              className="mt-6 flex min-h-[560px] flex-col items-center rounded-[2rem] border border-black/40 px-6 pb-8 pt-6 text-center shadow-[0_20px_40px_rgba(0,0,0,0.35)]"
+              className="rounded-[1.65rem] border border-[#25221b] px-5 pb-5 pt-5"
               style={{ background: previewBackground, color: config.text_color }}
             >
-              <div className="text-2xl font-extrabold">
-                {config.full_name || userName}
+              <div className="flex flex-col items-center text-center">
+                {config.widget_configs.photo?.file_url ? (
+                  <Image
+                    src={config.widget_configs.photo.file_url}
+                    alt={config.full_name || "Foto de perfil"}
+                    width={96}
+                    height={96}
+                    unoptimized
+                    className="mb-4 h-24 w-24 rounded-full border border-white/15 object-cover shadow-lg"
+                  />
+                ) : null}
+                <div className="text-[1.7rem] font-extrabold leading-tight">
+                  {config.full_name || userName || "Perfil digital"}
+                </div>
+                <div className="mt-2 text-[1.02rem] text-white/65">
+                  {config.description || "Gerente"}
+                </div>
+                {config.company_name ? (
+                  <div className="mt-1 text-sm text-white/55">{config.company_name}</div>
+                ) : null}
+                {config.show_save_contact ? (
+                  <PublicSaveContactButton
+                    fullName={config.full_name || userName || "Perfil digital"}
+                    companyName={config.company_name}
+                    title={config.contact_title || config.description || ""}
+                    photoUrl={config.widget_configs.photo?.file_url ?? null}
+                    phones={saveContactData.phones}
+                    emails={saveContactData.emails}
+                    urls={saveContactData.urls}
+                    address={saveContactData.address}
+                    backgroundColor={config.main_button_color}
+                  />
+                ) : null}
               </div>
-              <div className="mt-2 text-base opacity-90">
-                {config.description || "Gerente"}
+
+              <div id="widgets" className="mt-5 grid gap-3">
+                {selectedPreviewWidgets.length > 0 ? (
+                  selectedPreviewWidgets.map((entry) => {
+                    const widget = entry.config as Record<string, string | null>;
+
+                    switch (entry.id) {
+                      case "photo":
+                        return null;
+                      case "whatsapp":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label="WhatsApp"
+                            href={getWhatsappUrl(
+                              String(widget.country_code ?? "+56"),
+                              String(widget.number ?? ""),
+                              String(widget.message ?? ""),
+                            )}
+                            toneClassName="from-emerald-500 to-emerald-400"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "phone":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label="Teléfono"
+                            href={getTelUrl(
+                              String(widget.country_code ?? "+56"),
+                              String(widget.number ?? ""),
+                            )}
+                            toneClassName="from-emerald-500 to-emerald-400"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "email":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label="Email"
+                            href={getMailTo(
+                              String(widget.email ?? ""),
+                              String(widget.subject ?? ""),
+                            )}
+                            toneClassName="from-rose-500 to-orange-500"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "instagram":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label="Instagram"
+                            href={normalizePublicUrl(
+                              `https://instagram.com/${String(widget.username ?? "").replace(/^@/, "")}`,
+                            )}
+                            toneClassName="from-fuchsia-500 to-violet-500"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "linkedin":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label="LinkedIn"
+                            href={normalizePublicUrl(String(widget.url ?? ""))}
+                            toneClassName="from-blue-500 to-sky-500"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "website":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label="Sitio Web"
+                            href={normalizePublicUrl(String(widget.url ?? ""))}
+                            toneClassName="from-blue-500 to-sky-500"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "location":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label={widget.title || "Ubicación"}
+                            href={normalizePublicUrl(String(widget.maps_url ?? ""))}
+                            toneClassName="from-rose-500 to-orange-500"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "transfer": {
+                        const copyText = [
+                          widget.company_name ? `Nombre: ${widget.company_name}` : null,
+                          widget.rut ? `RUT: ${widget.rut}` : null,
+                          widget.bank ? `Banco: ${widget.bank}` : null,
+                          widget.account_type ? `Tipo cuenta: ${widget.account_type}` : null,
+                          widget.account_number ? `Numero cuenta: ${widget.account_number}` : null,
+                          widget.confirmation_email
+                            ? `Email: ${widget.confirmation_email}`
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join("\n");
+
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label="Datos Transferencia"
+                            copyText={copyText}
+                            toneClassName="from-fuchsia-500 to-violet-500"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      }
+                      case "pdf":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label={widget.title || "PDF/Documento"}
+                            href={
+                              widget.storage_path
+                                ? getStorageProxyUrl(widget.storage_path)
+                                : widget.file_url ?? undefined
+                            }
+                            toneClassName="from-rose-500 to-orange-500"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      case "custom":
+                        return (
+                          <PublicWidgetAction
+                            key={entry.id}
+                            label={widget.label || "Enlace personalizado"}
+                            href={normalizePublicUrl(String(widget.url ?? ""))}
+                            toneClassName="from-zinc-500 to-zinc-400"
+                            icon={<PreviewWidgetGlyph widgetId={entry.id} />}
+                          />
+                        );
+                      default:
+                        return null;
+                    }
+                  })
+                ) : (
+                  <div className="rounded-[1.15rem] border border-dashed border-[#3a3428] bg-[#171717] p-6 text-sm text-white/55">
+                    Este perfil no tiene widgets publicados todavía.
+                  </div>
+                )}
               </div>
-              {config.company_name ? (
-                <div className="mt-1 text-sm opacity-80">{config.company_name}</div>
-              ) : null}
-              {config.show_save_contact ? (
-                <button
-                  type="button"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white shadow-lg transition"
-                  style={{ backgroundColor: config.main_button_color }}
-                >
-                  <span className="text-base">💾</span>
-                  Guardar contacto
-                </button>
-              ) : null}
-              <div className="mt-10 text-xs opacity-75">Powered by: lopva.cl</div>
+
+              <div className="mt-7 flex flex-col items-center gap-2 text-center">
+                <div className="text-[0.72rem] text-white/45">Powered by: lopva.cl</div>
+              </div>
             </div>
           </div>
         </section>
@@ -766,7 +1155,7 @@ export function TdpProfileBuilder({
                             <ArrowDownIcon />
                           </SmallIconButton>
                           <SmallIconButton
-                            label={expanded ? "Contraer" : "Editar"}
+                            label={expanded ? "Colapsar widget" : "Expandir widget"}
                             onClick={() =>
                               setExpandedWidgets((current) => ({
                                 ...current,
@@ -774,7 +1163,7 @@ export function TdpProfileBuilder({
                               }))
                             }
                           >
-                            <EditIcon />
+                            <ChevronUpDownIcon expanded={expanded} />
                           </SmallIconButton>
                           <SmallIconButton
                             label="Eliminar"
@@ -801,7 +1190,11 @@ export function TdpProfileBuilder({
                             onUpdate={(updater) => setWidgetConfig(widget.id, updater)}
                           />
                         </div>
-                      ) : null}
+                      ) : (
+                        <div className="px-5 py-3 text-xs text-white/45">
+                          Widget colapsado.
+                        </div>
+                      )}
                     </article>
                   );
                 })}

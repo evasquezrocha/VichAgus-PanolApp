@@ -3,6 +3,7 @@
 import { buildFlashPath, getActionErrorMessage } from "@/lib/flash";
 import { deleteFileFromStorage, uploadFileToStorage } from "@/lib/storage";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { requireCurrentProfile } from "@/server/auth/guards";
 import { saveTdpProfileConfig } from "@/server/dal/tdp-profile-configs.dal";
 import {
   DEFAULT_TDP_PROFILE_CONFIG,
@@ -76,6 +77,7 @@ function getFormFile(formData: FormData, fieldName: string) {
 export async function saveTdpProfileConfigAction(formData: FormData) {
   try {
     const supabase = await createServerSupabaseClient();
+    const currentProfile = await requireCurrentProfile();
     const {
       data: { user },
       error: userError,
@@ -83,6 +85,12 @@ export async function saveTdpProfileConfigAction(formData: FormData) {
 
     if (userError || !user) {
       throw new Error("Debes iniciar sesion para guardar el perfil.");
+    }
+
+    const targetUserId = String(formData.get("target_user_id") ?? user.id);
+
+    if (targetUserId !== user.id && !currentProfile.is_tdp_admin) {
+      throw new Error("No tienes permisos para editar el perfil de otro usuario.");
     }
 
     const currentConfig = parseConfigJson(formData.get("config_json"));
@@ -93,7 +101,7 @@ export async function saveTdpProfileConfigAction(formData: FormData) {
       const previousPhoto = nextWidgetConfigs.photo;
       const uploadedPhoto = await uploadFileToStorage(
         photoFile,
-        `tdp/${user.id}/widgets/photo`,
+        `tdp/${targetUserId}/widgets/photo`,
       );
 
       nextWidgetConfigs.photo = {
@@ -113,7 +121,7 @@ export async function saveTdpProfileConfigAction(formData: FormData) {
       const previousPdf = nextWidgetConfigs.pdf;
       const uploadedPdf = await uploadFileToStorage(
         pdfFile,
-        `tdp/${user.id}/widgets/pdf`,
+        `tdp/${targetUserId}/widgets/pdf`,
       );
 
       nextWidgetConfigs.pdf = {
@@ -136,11 +144,11 @@ export async function saveTdpProfileConfigAction(formData: FormData) {
       widget_configs: nextWidgetConfigs,
     };
 
-    await saveTdpProfileConfig(user.id, config);
+    await saveTdpProfileConfig(targetUserId, config);
   } catch (error) {
     redirect(
       buildFlashPath(
-        "/tdp/panel/perfil",
+        String(formData.get("return_to") ?? "/tdp/panel/perfil"),
         "error",
         getActionErrorMessage(error, "No se pudo guardar el perfil."),
       ),
@@ -148,9 +156,10 @@ export async function saveTdpProfileConfigAction(formData: FormData) {
   }
 
   revalidatePath("/tdp/panel/perfil");
+  revalidatePath("/tdp/panel/usuarios");
   redirect(
     buildFlashPath(
-      "/tdp/panel/perfil",
+      String(formData.get("return_to") ?? "/tdp/panel/perfil"),
       "success",
       "Perfil digital guardado correctamente.",
     ),

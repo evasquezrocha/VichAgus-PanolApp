@@ -5,6 +5,7 @@ export type CurrentProfile = Pick<
   Profile,
   "id" | "company_id" | "role_id" | "email" | "full_name" | "role" | "is_active"
 > & {
+  is_tdp_admin: boolean;
   company_name: string | null;
   company_rut: string | null;
   company_logo_url: string | null;

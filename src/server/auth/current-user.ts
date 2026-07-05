@@ -78,11 +78,18 @@ function mergePermissions(
   return Array.from(new Set([...basePermissions, ...extraPermissions]));
 }
 
+function getBooleanMetadataFlag(value: unknown) {
+  return value === true || value === "true" || value === 1 || value === "1";
+}
+
 function buildTdpCurrentProfile(user: User): CurrentProfile {
   const fullName =
     (user.user_metadata?.full_name as string | undefined)?.trim() ||
     user.email ||
     null;
+  const isTdpAdmin =
+    getBooleanMetadataFlag(user.app_metadata?.tdp_admin) ||
+    getBooleanMetadataFlag(user.user_metadata?.tdp_admin);
 
   return {
     id: user.id,
@@ -92,6 +99,7 @@ function buildTdpCurrentProfile(user: User): CurrentProfile {
     email: user.email ?? "",
     role: "tdp_user",
     is_active: true,
+    is_tdp_admin: isTdpAdmin,
     company_name: null,
     company_rut: null,
     company_logo_url: null,
@@ -108,7 +116,7 @@ function buildTdpCurrentProfile(user: User): CurrentProfile {
     company_sidebar_active_bg_color: null,
     company_sidebar_active_text_color: null,
     company_platform_background_color: null,
-    role_name: "Usuario TDP",
+    role_name: isTdpAdmin ? "Administrador TDP" : "Usuario TDP",
     permissions: [],
   };
 }
@@ -199,6 +207,7 @@ export async function getCurrentProfile(): Promise<CurrentProfile | null> {
     company_sidebar_active_text_color: companies?.sidebar_active_text_color ?? null,
     company_platform_background_color:
       companies?.platform_background_color ?? null,
+    is_tdp_admin: false,
     role_name: roleName,
     permissions,
   };

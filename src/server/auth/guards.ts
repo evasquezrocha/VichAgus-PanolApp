@@ -52,6 +52,16 @@ export async function requirePermission(permission: AppPermission) {
   return profile;
 }
 
+export async function requireTdpAdmin() {
+  const profile = await requireCurrentProfile();
+
+  if (!profile.is_tdp_admin) {
+    redirect(getDefaultDashboardPath());
+  }
+
+  return profile;
+}
+
 export async function requireCompanyAccess(companyId: string) {
   const profile = await requireCurrentProfile();
 

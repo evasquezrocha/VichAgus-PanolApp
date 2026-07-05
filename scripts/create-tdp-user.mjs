@@ -45,6 +45,9 @@ loadEnvFile(resolve(process.cwd(), ".env.local"));
 const email = requiredEnv("TDP_USER_EMAIL").toLowerCase();
 const password = requiredEnv("TDP_USER_PASSWORD");
 const fullName = process.env.TDP_USER_FULL_NAME ?? null;
+const isAdmin = ["true", "1", "yes"].includes(
+  (process.env.TDP_USER_IS_ADMIN ?? "").trim().toLowerCase(),
+);
 
 const supabaseUrl = requiredEnv("NEXT_PUBLIC_SUPABASE_URL");
 const serviceRoleKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
@@ -80,9 +83,14 @@ const { data: createdUser, error: createUserError } =
     email,
     password,
     email_confirm: true,
+    app_metadata: {
+      site_variant: "tdp",
+      tdp_admin: isAdmin,
+    },
     user_metadata: {
       full_name: fullName,
       site_variant: "tdp",
+      tdp_admin: isAdmin,
     },
   });
 
@@ -95,10 +103,16 @@ if (createUserError) {
 
   const { data: updatedUser, error: updateUserError } =
     await supabase.auth.admin.updateUserById(existingUser.id, {
+      app_metadata: {
+        ...(existingUser.app_metadata ?? {}),
+        site_variant: "tdp",
+        tdp_admin: isAdmin,
+      },
       user_metadata: {
         ...(existingUser.user_metadata ?? {}),
         full_name: fullName ?? existingUser.user_metadata?.full_name ?? null,
         site_variant: "tdp",
+        tdp_admin: isAdmin,
       },
       password,
       email_confirm: true,
@@ -117,4 +131,4 @@ if (!user) {
   throw new Error("Supabase did not return a created user.");
 }
 
-console.log(`TDP user created: ${email}`);
+console.log(`TDP user created: ${email}${isAdmin ? " (admin)" : ""}`);
