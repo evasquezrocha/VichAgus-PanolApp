@@ -131,7 +131,9 @@ export async function listAssignableRolesForPlatformAdmin(): Promise<
   AppRoleDefinition[]
 > {
   await requirePermission("users.manage.global");
-  return fetchGlobalRoles();
+  const roles = await fetchGlobalRoles();
+
+  return roles.filter((role) => role.is_active && role.slug !== "super_admin");
 }
 
 export async function createGlobalRoleForPlatformAdmin(input: RoleInput) {
@@ -317,5 +319,7 @@ export async function listAssignableRolesForCompanyAdmin(): Promise<
 
   const roles = await ensureTenantDefaultRoles(currentProfile.company_id);
 
-  return roles.filter((role) => role.slug !== "super_admin" && isTenantSafeRole(role));
+  return roles.filter(
+    (role) => role.is_active && role.slug !== "super_admin" && isTenantSafeRole(role),
+  );
 }
