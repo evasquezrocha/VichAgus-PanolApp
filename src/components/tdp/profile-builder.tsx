@@ -721,7 +721,11 @@ export function TdpProfileBuilder({
   }
 
   const previewBackground = useMemo(() => {
-    return buildPreviewBackground(config);
+    return buildPreviewBackground(
+      config.background_1,
+      config.background_2,
+      config.use_second_background,
+    );
   }, [config]);
 
   function getWidgetConfig<T extends TdpWidgetId>(widgetId: T) {
